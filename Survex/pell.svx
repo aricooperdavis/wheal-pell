@@ -1,0 +1,8 @@
+*begin pell
+
+    *include pell-2023-11-25
+    *include pell-2024-01-14
+
+    *equate pell-2023-11-25.15 pell-2024-01-14.1
+
+*end pell
