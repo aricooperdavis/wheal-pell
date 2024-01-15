@@ -7,8 +7,13 @@ This repository contains the survey data and files for the Wheal Pell mine surve
 ## Contents
 
 - [About](#about)
+- [Survey](#survey)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Survey
+
+The survey has not been completed, but you can find the most recent `.3d` file in [the latest release](https://github.com/aricooperdavis/wheal-pell/releases/latest).
 
 ## About
 
