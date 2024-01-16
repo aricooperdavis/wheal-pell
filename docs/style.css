@@ -1,0 +1,26 @@
+/* vars */
+:root {
+    --warning-text-emphasis: #664d03;
+    --warning-bg: #fff3cd;
+    --warning-border: #ffe69c;
+}
+
+/* style.css */
+body {
+    font-family: sans-serif;
+}
+
+.callout {
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    color: var(--callout-color, inherit);
+    background-color: var(--callout-bg, var(--bs-gray-100));
+    border-left: 0.25rem solid var(--callout-border, var(--bs-grey-300));
+}
+
+.callout-warning {
+    --callout-color: var(--warning-text-emphasis);
+    --callout-bg: var(--warning-bg);
+    --callout-border: var(--warning-border);
+}
