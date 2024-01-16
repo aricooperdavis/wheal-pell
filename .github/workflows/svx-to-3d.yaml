@@ -31,7 +31,7 @@ jobs:
       # Re-download CaveView for docs
       - name: Download CaveView
         run: |
-          rm -r docs/CaveView
+          rm -rf docs/CaveView
           wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
           unzip docs/CaveView.zip -d docs/
           rm docs/CaveView.zip
