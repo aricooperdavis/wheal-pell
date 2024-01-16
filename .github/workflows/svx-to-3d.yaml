@@ -27,6 +27,7 @@ jobs:
           cavern Survex/pell.svx
           rm pell.err
           install -D pell.3d docs/surveys/pell.3d
+          rm pell.3d
 
       # Re-download CaveView for docs
       - name: Download CaveView
@@ -41,5 +42,6 @@ jobs:
         run: |
           git config user.name aricooperdavis
           git config user.email aricooperdavis@user.noreply.github.com
-          git commit -am 'Automated build of ${{ github.sha }}'
+          git add .
+          git commit -m 'Automated build of ${{ github.sha }}'
           git push --force -u origin main:build
