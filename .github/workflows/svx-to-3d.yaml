@@ -24,17 +24,17 @@ jobs:
       # Run cavern to process the svx files
       - name: Process svx files
         run: |
-          cavern ./Survex/pell.svx
-          rm ./pell.err
-          mv ./pell.3d ./docs/surveys/pell.3d
+          cavern Survex/pell.svx
+          rm pell.err
+          install -D pell.3d docs/surveys/pell.3d
 
       # Re-download CaveView for docs
       - name: Download CaveView
         run: |
-          rm -r ./docs/CaveView
-          wget https://www.speleoalex.org/software/caveview/CaveView.zip -O ./docs/CaveView.zip
-          unzip ./docs/CaveView.zip -d ./docs/CaveView
-          rm ./docs/CaveView.zip
+          rm -r docs/CaveView
+          wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
+          unzip docs/CaveView.zip -d docs/
+          rm docs/CaveView.zip
 
       # Push the results to the `build` branch
       - name: Push to build branch
