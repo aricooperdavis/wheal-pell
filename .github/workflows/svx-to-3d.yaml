@@ -1,0 +1,45 @@
+# This workflow is triggered by a push to the `main` branch
+# which it checks out, runs cavern to process the svx files,
+# and the pushes the results to the `build` branch.
+
+name: svx-to-3d
+run-name: Process SVX to 3D
+
+# Run on pushed to `main` branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  checkout-and-process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Install survex
+      - run: sudo apt-get install -y survex
+
+      # Run cavern to process the svx files
+      - name: Process svx files
+        run: |
+          cavern ./Survex/pell.svx
+          rm ./pell.err
+          mv ./pell.3d ./docs/surveys/pell.3d
+
+      # Re-download CaveView for docs
+      - name: Download CaveView
+        run: |
+          rm -r ./docs/CaveView
+          wget https://www.speleoalex.org/software/caveview/CaveView.zip -O ./docs/CaveView.zip
+          unzip ./docs/CaveView.zip -d ./docs/CaveView
+          rm ./docs/CaveView.zip
+
+      # Push the results to the `build` branch
+      - name: Push to build branch
+        run: |
+          git config user.name aricooperdavis
+          git config user.email aricooperdavis@user.noreply.github.com
+          git commit -am 'Automated build of ${{ github.sha }}'
+          git push --force -u origin main:build
