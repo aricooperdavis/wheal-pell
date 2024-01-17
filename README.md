@@ -13,7 +13,9 @@ This repository contains the survey data and files for the Wheal Pell mine surve
 
 ## Survey
 
-The survey has not been completed, but you can find the most recent `.3d` file in [the latest release](https://github.com/aricooperdavis/wheal-pell/releases/latest).
+The survey has not been completed, but you can find the most recent `.3d` file in [the latest release](https://github.com/aricooperdavis/wheal-pell/releases/latest), or [view a 3D render online](https://aricooperdavis.github.io/wheal-pell/).
+
+[![Screenshot of the 3D rendered survey data](image.png)](https://aricooperdavis.github.io/wheal-pell/)
 
 ## About
 
