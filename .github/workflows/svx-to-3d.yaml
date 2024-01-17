@@ -22,6 +22,9 @@ jobs:
 
       - name: Prepare for GH Pages build
         run: |
+          git rm -rf docs/CaveView docs/surveys
+          git checkout origin/build docs/Caveview docs/surveys
+
           latest=""
           for f in $(find Survex/ -name '*.svx'); do
             if [ -z "$latest" ] || [ "$f" -nt "$latest" ]; then
@@ -29,9 +32,7 @@ jobs:
             fi
           done
 
-          latest_dt=$(git log -1 --format=%at origin/main -- $latest)
-          build_dt=$(git log -1 --format=%at origin/build -- docs/surveys/pell.3d)
-          if [ "$latest_dt" -gt "$build_dt" ]; then
+          if [ $latest -nt docs/surveys/pell.3d ]; then
             echo "Processing survey to reflect changes in $latest"
             sudo apt-get install -y survex
             cavern Survex/pell.svx
@@ -43,9 +44,7 @@ jobs:
             echo "Survey is up to date with Survex files"
           fi
 
-          git checkout build
           local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
-          git checkout main
           remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
           if [ "$local" != "$remote" ]; then
             echo "Updating CaveView from $local to $remote"
