@@ -20,6 +20,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Switch to build branch
+      - name: Switch to build branch
+        run: |
+          git checkout build
+          git pull origin build
+
       # Run cavern to process the svx files
       - name: Process svx files
         run: |
