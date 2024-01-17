@@ -25,7 +25,7 @@ jobs:
         run: |
           git checkout build
           git pull origin build
-          changes=0
+          changes=false
 
       # Run cavern to process the svx files
       - name: Process svx files
@@ -46,7 +46,7 @@ jobs:
             rm pell.err
             install -D pell.3d docs/surveys/pell.3d
             rm pell.3d
-            changes=1
+            changes=true
           else 
             echo "Survey is up to date with Survex files"
           fi
@@ -62,7 +62,7 @@ jobs:
             wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
             unzip docs/CaveView.zip -d docs/
             rm docs/CaveView.zip
-            changes=1
+            changes=true
           else
             echo "Local CaveView version $local is up to date"
           fi
@@ -70,7 +70,7 @@ jobs:
       # Push the results to the `build` branch
       - name: Push to build branch
         run: |
-          if [ $changes -eq 1 ]; then
+          if [ "$changes" = false ]; then
             echo "No changes required"
           else
             echo "Pushing changes to build branch"
