@@ -23,7 +23,7 @@ jobs:
       - name: Prepare for GH Pages build
         run: |
           rm -rf docs/CaveView docs/surveys
-          git checkout origin/build docs/Caveview docs/surveys
+          git checkout origin/build -- docs/Caveview docs/surveys
 
           latest=""
           for f in $(find Survex/ -name '*.svx'); do
