@@ -23,7 +23,7 @@ jobs:
       - name: Prepare for GH Pages build
         run: |
           rm -rf docs/CaveView docs/surveys
-          git checkout origin/build -- docs/Caveview docs/surveys
+          git checkout origin/build -- docs/CaveView docs/surveys
 
           latest=""
           for f in $(find Survex/ -name '*.svx'); do
@@ -32,7 +32,7 @@ jobs:
             fi
           done
 
-          if [ $latest -nt docs/surveys/pell.3d ]; then
+          if [ -f docs/surveys/pell.3d ] || [ $latest -nt docs/surveys/pell.3d ]; then
             echo "Processing survey to reflect changes in $latest"
             sudo apt-get install -y survex
             cavern Survex/pell.svx
@@ -44,9 +44,11 @@ jobs:
             echo "Survey is up to date with Survex files"
           fi
 
-          local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
-          remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
-          if [ "$local" != "$remote" ]; then
+          if [ -d docs/CaveView ]; then
+            local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
+            remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
+          fi
+          if [ -z "$local"] || [ "$local" != "$remote" ]; then
             echo "Updating CaveView from $local to $remote"
             rm -rf docs/CaveView
             wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
