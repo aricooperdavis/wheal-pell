@@ -9,6 +9,7 @@ This repository contains the survey data and files for the Wheal Pell mine surve
 - [About](#about)
 - [Survey](#survey)
 - [Contributing](#contributing)
+- [Credits](#credits)
 - [License](#license)
 
 ## Survey
@@ -25,7 +26,7 @@ You can [see some 3D scans of areas of the mine on my blog](https://cooper-davis
 
 > :warning: Wheal Pell is on private land and __must not__ be accessed without the owners permission.
 
-Producing a complete survey is a substantial undertaking, so this repo is used to document progress as it is made. We plan to use Github Actions to autmagically generate new `.3d` files each time the survey data is updated, so that the survey can be visualised live using something like [CaveVeiw.js](https://aardgoose.github.io/CaveView.js/).
+Producing a complete survey is a substantial undertaking, so this repo is used to document progress as it is made. Surveying is performed "paperless" using [SexyTopo](https://github.com/richsmith/sexytopo) to record data, and a [Shetland Attack Pony v5](https://www.shetlandattackpony.co.uk/) digital surveying tool to take measurements.
 
 ## Contributing
 
@@ -37,6 +38,11 @@ To extend the survey:
   - You may need to `*export` that station from the appropriate survey part if it has not alread been `*export`ed.
 
 Please make sure you save your SexyTopo data folder in the `./SexyTopo` directory, so that we can use your annotations to draw up the survey.
+
+## Credits
+
+- Matt Palmer - _Notetaking_
+- Ari Cooper-Davis - _Instruments_
 
 ## License
 
