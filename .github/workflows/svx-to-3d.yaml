@@ -11,6 +11,9 @@ on:
     branches:
       - main
 
+env:
+  CHANGES: false
+
 jobs:
   checkout-and-process:
     runs-on: ubuntu-latest
@@ -20,16 +23,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Switch to build branch
-      - name: Switch to build branch
+      - name: Prepare for GH Pages build
         run: |
           git checkout build
           git pull origin build
           changes=false
 
-      # Run cavern to process the svx files
-      - name: Process svx files
-        run: |
           latest=""
           for f in $(find Survex/ -name '*.svx'); do
             if [ -z "$latest" ] || [ "$f" -nt "$latest" ]; then
@@ -51,9 +50,6 @@ jobs:
             echo "Survey is up to date with Survex files"
           fi
 
-      # Re-download CaveView for docs
-      - name: Download CaveView
-        run: |
           local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
           remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
           if [ "$local" != "$remote" ]; then
@@ -67,16 +63,13 @@ jobs:
             echo "Local CaveView version $local is up to date"
           fi
 
-      # Push the results to the `build` branch
-      - name: Push to build branch
-        run: |
           if [ "$changes" = false ]; then
             echo "No changes required"
           else
             echo "Pushing changes to build branch"
-              git config user.name aricooperdavis
-              git config user.email aricooperdavis@user.noreply.github.com
-              git add .
-              git commit -m 'Automated build of ${{ github.sha }}'
-              git push --force -u origin main:build
+            git config user.name aricooperdavis
+            git config user.email aricooperdavis@user.noreply.github.com
+            git add .
+            git commit -m 'Automated build of ${{ github.sha }}'
+            git push --force -u origin main:build
           fi
