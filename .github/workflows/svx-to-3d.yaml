@@ -22,7 +22,7 @@ jobs:
 
       - name: Prepare for GH Pages build
         run: |
-          git rm -rf docs/CaveView docs/surveys
+          rm -rf docs/CaveView docs/surveys
           git checkout origin/build docs/Caveview docs/surveys
 
           latest=""
