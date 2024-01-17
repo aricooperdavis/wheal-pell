@@ -24,18 +24,39 @@ jobs:
       # Run cavern to process the svx files
       - name: Process svx files
         run: |
-          cavern Survex/pell.svx
-          rm pell.err
-          install -D pell.3d docs/surveys/pell.3d
-          rm pell.3d
+          latest=""
+          for f in $(find Survex/ -name '*.svx'); do
+            if [ -z "$latest" ] || [ "$f" -nt "$latest" ]; then
+              latest="$f"
+            fi
+          done
+
+          latest_dt=$(git log -1 --format=%at origin/main -- $latest)
+          build_dt=$(git log -1 --format=%at origin/build -- docs/surveys/pell.3d)
+          if [ "$latest_dt" -gt "$build_dt" ]; then
+            echo "Processing survey to reflect changes in $latest"
+            cavern Survex/pell.svx
+            rm pell.err
+            install -D pell.3d docs/surveys/pell.3d
+            rm pell.3d
+          else 
+            echo "Survey is up to date with Survex files"
+          fi
 
       # Re-download CaveView for docs
       - name: Download CaveView
         run: |
-          rm -rf docs/CaveView
-          wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
-          unzip docs/CaveView.zip -d docs/
-          rm docs/CaveView.zip
+          local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
+          remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
+          if [ "$local" != "$remote" ]; then
+            echo "Updating CaveView from $local to $remote"
+            rm -rf docs/CaveView
+            wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
+            unzip docs/CaveView.zip -d docs/
+            rm docs/CaveView.zip
+          else
+            echo "Local CaveView version $local is up to date"
+          fi
 
       # Push the results to the `build` branch
       - name: Push to build branch
