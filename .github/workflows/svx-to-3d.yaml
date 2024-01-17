@@ -70,7 +70,7 @@ jobs:
       # Push the results to the `build` branch
       - name: Push to build branch
         run: |
-          if [ "$changes" -eq 1 ]; then
+          if [ $changes -eq 1 ]; then
             echo "No changes required"
           else
             echo "Pushing changes to build branch"
