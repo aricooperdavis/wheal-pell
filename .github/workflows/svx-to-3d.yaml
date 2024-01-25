@@ -28,12 +28,13 @@ jobs:
           updated_at=""
           for f in $(find Survex/ -name '*.svx'); do
             commited_at=$(git log -1 --format=%ct -- $f)
-            if [ -z "$updated_at" ] || [ "$commited_at" \> "$updated_at" ]; then
+            if [ -z "$updated_at" ] || [ "$commited_at" -gt "$updated_at" ]; then
               updated_at="$commited_at"
             fi
           done
+          echo "Last update to Survex files was at $updated_at"
 
-          if [ ! -f docs/surveys/pell.3d ] || [ $updated_at > git log -1 --format=%ct -- docs/surveys/pell.3d ]; then
+          if [ ! -f docs/surveys/pell.3d ] || [ $updated_at > git log origin/build -1 --format=%ct -- docs/surveys/pell.3d ]; then
             echo "Processing survey to reflect updates to Survex files"
             sudo apt-get install -y survex
             cavern Survex/pell.svx
@@ -47,9 +48,9 @@ jobs:
 
           if [ -d docs/CaveView ]; then
             local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
-            remote=$(curl -sv https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
+            remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
           fi
-          if [ -z "$local"] || [ "$local" != "$remote" ]; then
+          if [ -z "$local" ] || [ "$local" != "$remote" ]; then
             echo "Updating CaveView from $local to $remote"
             rm -rf docs/CaveView
             wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
