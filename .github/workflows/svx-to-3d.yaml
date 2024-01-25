@@ -25,15 +25,16 @@ jobs:
           rm -rf docs/CaveView docs/surveys
           git checkout origin/build -- docs/CaveView docs/surveys || echo "Error checking out files from build branch"
 
-          latest=""
+          updated_at=""
           for f in $(find Survex/ -name '*.svx'); do
-            if [ -z "$latest" ] || [ "$f" -nt "$latest" ]; then
-              latest="$f"
+            commited_at=$(git log -1 --format=%ct -- $f)
+            if [ -z "$updated_at" ] || [ "$commited_at" \> "$updated_at" ]; then
+              updated_at="$commited_at"
             fi
           done
 
-          if [ ! -f docs/surveys/pell.3d ] || [ $latest -nt docs/surveys/pell.3d ]; then
-            echo "Processing survey to reflect changes in $latest"
+          if [ ! -f docs/surveys/pell.3d ] || [ $updated_at > git log -1 --format=%ct -- docs/surveys/pell.3d ]; then
+            echo "Processing survey to reflect updates to Survex files"
             sudo apt-get install -y survex
             cavern Survex/pell.svx
             rm pell.err
@@ -46,7 +47,7 @@ jobs:
 
           if [ -d docs/CaveView ]; then
             local=$(gawk -F "'" '/VERSION =/{print $2}' docs/CaveView/js/CaveView2.js)
-            remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
+            remote=$(curl -sv https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
           fi
           if [ -z "$local"] || [ "$local" != "$remote" ]; then
             echo "Updating CaveView from $local to $remote"
