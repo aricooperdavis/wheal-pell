@@ -29,6 +29,7 @@ window.addEventListener('load', function() {
     });
     viewer.addOverlay( 'Bing OS', new BingProvider( 'OrdnanceSurvey', 'Ap8PRYAyAVcyoSPio8EaFtDEpYJVNwEA70GqYj31EXa6jkT_SduFHMKeHnvyS4D_' ) );
     viewer.addOverlay( 'OpenStreetMap', new OSMProvider() );
+    viewer.addOverlay( 'Satellite', new MapBoxProvider( 'mapbox.satellite', 'pk.eyJ1IjoiYXJpY29vcGVyZGF2aXMiLCJhIjoiY2xydGQ2c2RzMDVreTJpbXhxcnF5ZWEzZSJ9.dB0-lgAaKzyrQ-MvVrrvPg') );
 
     let ui = new CV2.CaveViewUI(viewer);
     ui.loadCave('pell.3d');
