@@ -3,8 +3,10 @@
     *include pell-2023-11-25
     *include pell-2024-01-14
     *include pell-2024-01-25
+    *include pell-2024-03-09
 
     *equate pell-2023-11-25.15 pell-2024-01-14.1
     *equate pell-2024-01-14.40 pell-2024-01-25.1
+    *equate pell-2024-01-25.8 pell-2024-03-09.1
 
 *end pell
