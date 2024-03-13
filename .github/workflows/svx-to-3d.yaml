@@ -43,9 +43,10 @@ jobs:
             sudo apt-get install -y therion
             log=$(therion Therion/pell.thconfig)
             rm therion.log
-            install -D pell.3d docs/surveys/pell.3d
-            rm pell.3d
-            install -D pell-plan.pdf docs/surveys/pell-plan.pdf
+            install -D Therion/pell.3d docs/surveys/pell.3d
+            rm Therion/pell.3d
+            install -D Therion/pell-plan.pdf docs/surveys/pell-plan.pdf
+            rm Therion/pell-plan.pdf
           else
             echo "The latest committed datetime of a Therion file is not newer than the latest commit datetime of docs/surveys/pell.3d"
             git checkout origin/build -- docs/surveys
