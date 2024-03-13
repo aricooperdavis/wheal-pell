@@ -1,0 +1,97 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1574.80 -787.40 14881.89 944.88
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2024-01-14.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2024-01-14-ee -projection extended
+
+point 3432.8506 -118.53205 station -name 10
+
+point 6604.9897 -66.09357 station -name 22
+
+point 292.7939 7.9700174 station -name 3
+
+point 3981.3708 -52.58888 station -name 13
+
+point 4204.3745 -128.07396 station -name 16
+
+point 10448.139 -105.74039 station -name 33
+
+point 1745.173 -59.143745 station -name 7
+
+point 4178.986 -31.47255 station -name 14
+
+point 5707.0693 -124.63439 station -name 19
+
+point 9822.59 -66.185104 station -name 32
+
+point 162.64684 -10.999796 station -name 2
+
+point 2479.6575 -87.70081 station -name 8
+
+point 3730.6423 -160.37103 station -name 12
+
+point 740.43915 -21.431503 station -name 5
+
+point 6859.7544 -72.90983 station -name 23
+
+point 5218.704 -112.98926 station -name 18
+
+point 6229.726 12.661397 station -name 21
+
+point 12353.135 -73.077034 station -name 38
+
+point 11262.0 -109.340416 station -name 35
+
+point 11112.967 -95.392494 station -name 34
+
+point 12551.086 -31.949757 station -name 39
+
+point 1016.4217 -29.106733 station -name 6
+
+point 13228.406 -77.80044 station -name 40
+
+point 4759.0605 -165.65858 station -name 17
+
+point 7146.04 -96.033936 station -name 24
+
+point 9288.47 -48.5973 station -name 31
+
+point 7683.465 -203.4059 station -name 26
+
+point 609.1818 24.080803 station -name 4
+
+point 8180.8433 -134.13707 station -name 27
+
+point 0.0 0.0 station -name 1
+
+point 8926.155 -116.26385 station -name 29
+
+point 12091.394 -122.424034 station -name 37
+
+point 3550.1057 -105.964775 station -name 11
+
+point 11705.767 -59.452793 station -name 36
+
+point 4405.021 3.7712846 station -name 15
+
+point 3106.4807 -86.61909 station -name 9
+
+point 8651.932 -130.50874 station -name 28
+
+point 9050.775 -102.963554 station -name 30
+
+point 6031.9243 -38.157063 station -name 20
+
+point 7548.8096 -124.204346 station -name 25
+
+point 6672.1514 -206.54439 label -text " hole to lower level " -scale xs
+
+point 6807.015 7.6859393 label -text "  " -scale xs
+
+point 6713.9233 231.76253 label -text " Winze with handline " -scale xs
+
+point 6182.081 -289.40112 label -text " Dig? " -scale xs
+
+endscrap

@@ -1,0 +1,85 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -5039.37 -2047.24 1181.10 1338.58
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2024-03-09.plan.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2024-03-09-plan -projection plan
+
+point -3101.0974 196.67607 station -name 21
+
+point -2639.691 -1016.4554 station -name 8
+
+point -3171.3284 -1024.8699 station -name 10
+
+point -3390.3333 -22.923862 station -name 18
+
+point -3415.1616 382.3693 station -name 20
+
+point -2882.8765 228.53918 station -name 22
+
+point -3067.1577 -50.41683 station -name 17
+
+point -2551.451 -925.23883 station -name 25
+
+point -2884.32 -955.4384 station -name 9
+
+point -1042.2628 -362.73138 station -name 4
+
+point -2594.801 -339.30746 station -name 13
+
+point -3621.3206 433.10358 station -name 19
+
+point -1647.4973 -564.00165 station -name 6
+
+point -2283.8096 -364.95602 station -name 12
+
+point -2936.55 -172.16322 station -name 16
+
+point -3089.6099 -309.65787 station -name 23
+
+point 0.0 0.0 station -name 1
+
+point -2743.8423 -168.735 station -name 14
+
+point -1286.5343 -560.4209 station -name 5
+
+point -2776.7812 -743.32385 station -name 24
+
+point -2026.8368 -121.99654 station -name 11
+
+point -2909.4573 -78.392265 station -name 15
+
+point -270.02716 -299.8274 station -name 2
+
+point -688.2036 -404.16275 station -name 3
+
+point -1910.6846 -785.7705 station -name 7
+
+point -396.26257 -541.2358 label -text " stacked deads " -scale xs
+
+point -1509.8479 -812.3766 label -text " stope going up " -scale s
+
+point -2222.969 -262.79968 label -text " stope leading downwards " -scale xs
+
+point -2316.773 -1033.0323 label -text " shoulder height stope - filled in " -scale s
+
+point -3002.8042 -1093.5345 label -text " stacked deads " -scale xs
+
+point -3445.3154 -849.9745 label -text " End of level (run in) " -scale xs
+
+point -3045.2776 -948.4013 label -text " pink 'fluff' " -scale xs
+
+point -2338.99 -443.80316 label -text " stacked deads " -scale xs
+
+point -2782.315 54.55738 label -text " stacked deads " -scale xs
+
+point -3304.9573 164.77243 label -text " upward stope (run in) " -scale xs
+
+point -3007.2043 109.18706 label -text " stacked deads " -scale xs
+
+point -2683.6516 22.385252 label -text " (run in) " -scale xs
+
+point -2621.4849 -835.5469 label -text " Stream issues from run-in gravelly clay. " -scale xs
+
+endscrap

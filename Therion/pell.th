@@ -1,0 +1,28 @@
+encoding utf-8
+
+    survey pell \
+        -title "Wheal Pell, St. Agnes Consols"
+
+        # Input centerlines (raw from SexyTopo)
+        # input <file-name>
+        input "./2023-11-25/2023-11-25.th"
+        input "./2024-01-14/2024-01-14.th"
+        input "./2024-01-25/2024-01-25.th"
+        input "./2024-03-09/2024-03-09.th"
+
+        # Join scraps (?)
+        # join <point1> <point2> ... [OPTIONS]
+        join e1@2023-11-25 e2@2024-01-14
+        join w1@2023-11-25 w2@2024-01-14
+
+        centreline
+
+            # Equate stations
+            # equate <station list>
+            equate 16@2023-11-25 1@2024-01-14
+            equate 40@2024-01-14 1@2024-01-25
+            equate 8@2024-01-25 1@2024-03-09
+
+        endcentreline
+
+    endsurvey

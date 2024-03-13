@@ -1,0 +1,5 @@
+encoding utf-8
+source pell.th
+
+export model -format survex -o pell.3d
+export map -projection plan -o pell-plan.pdf

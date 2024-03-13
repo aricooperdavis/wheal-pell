@@ -1,0 +1,43 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1732.28 -551.18 8188.98 314.96
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2023-11-25.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2023-11-25-ee -projection extended
+
+point 448.34613 -28.307095 station -name 2
+
+point 975.5282 -56.824234 station -name 3
+
+point 4225.451 -180.19545 station -name 11
+
+point 4560.808 -176.21913 station -name 12
+
+point 3902.2007 -44.83885 station -name 17
+
+point 3002.5862 -110.627716 station -name 7
+
+point 2671.136 -92.082184 station -name 6
+
+point 1937.077 -88.399086 station -name 5
+
+point 3393.7632 -108.85253 station -name 8
+
+point 1418.8397 -77.764915 station -name 4
+
+point 5091.6523 -223.75032 station -name 14
+
+point 3929.793 -156.73268 station -name 10
+
+point 5948.408 -228.92522 station -name 15
+
+point 0.0 0.0 station -name 1
+
+point 3816.08 -69.77756 station -name 9
+
+point 6341.6104 -224.38872 station -name 16
+
+point 4771.3584 -185.04567 station -name 13
+
+endscrap

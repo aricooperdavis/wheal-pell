@@ -30,14 +30,19 @@ Producing a complete survey is a substantial undertaking, so this repo is used t
 
 ## Contributing
 
-To extend the survey:
+We're surveying using SexyTopo. If you want to contribute your own survey data then we'd recommend using SexyTopo too, because we know how it works. If you're happy with that, you can follow the instructions below:
 
-- Start your survey from an existing station on the survey, and create an `.svx` file with your new survey data (using something like SexyTopo).
-- Add the new `.svx` file to the `./Survex` directory. Name this file using the format `pell-{yyyy}-{mm}-{dd}.svx`, and `*export` the station you have started the new survey at.
-- In `pell.svx`, `*include` the new file, and `*equate` the exported survey station to the appropriate existing station in the survey.
-  - You may need to `*export` that station from the appropriate survey part if it has not alread been `*export`ed.
+- Start your survey from an existing station on the survey.
+- Export your survey from SexyTopo using the "Therion" export format.
+- Copy your exported data into the `Therion` directory in its own directory.
+- In Therion's Map View, draw over your `.plan.th2` and `.ee.th2` files, `id`-ing any features (e.g. walls) that have to join with features in other survey scraps.
+- In your `.th` file, detail your `team`.
+- In `Therion/pell.th`:
+  - `input` your `.th` file in the `survey` section.
+  - `join` your `id`-ed features in the `survey` section.
+  - `equate` your stations in the `centerline` section.
 
-Please make sure you save your SexyTopo data folder in the `./SexyTopo` directory, so that we can use your annotations to draw up the survey.
+We've also been saving our raw SexyTopo saves in the `SexyTopo` directory, in case we need them again for some reason.
 
 ## Credits
 

@@ -1,9 +1,9 @@
 # This workflow is triggered by a push to the `main` branch
-# which it checks out, runs cavern to process the svx files,
+# which it checks out, runs therion to process the survey data,
 # and the pushes the results to the `build` branch.
 
-name: svx-to-3d
-run-name: Process SVX to 3D
+name: build-survey
+run-name: Run therion on survey data
 
 # Run on pushed to `main` branch
 on:
@@ -23,47 +23,32 @@ jobs:
       - name: Prepare for GH Pages build
         run: |
 
-          # Loop through all .svx files in the Survex/ directory
-          latest_commit_svx=""
-          git ls-tree -r --name-only origin/main Survex/ | grep "Survex/.*\.svx$" | while read -r f; do
+          # Find ts of latest edit within Therion/ dir
+          latest_commit=""
+          git ls-tree -r --name-only origin/main Therion/ | grep "Therion/.*$" | while read -r f; do
             committed_at=$(git log origin/main -1 --format=%ct -- $f)
-            if [ -z "$latest_commit_svx" ] || [ "$committed_at" -gt "$latest_commit_svx" ]; then
-              latest_commit_svx="$committed_at"
+            if [ -z "$latest_commit" ] || [ "$committed_at" -gt "$latest_commit" ]; then
+              latest_commit="$committed_at"
             fi
           done
-          echo "The latest commit of an .svx file is $latest_commit_svx"
-          echo "The latest commit of pell.3d is $latest_commit_build"
+          echo "The latest commit of an .svx file is $latest_commit"
 
-          # Rebuild survey if needed
+          # Find ts of latest pell.3d build
           latest_commit_build=$(git log origin/build -1 --format=%ct -- docs/surveys/pell.3d)
-          if [ -z "$latest_commit_svx" ] || [ "$latest_commit_svx" -gt "$latest_commit_build" ]; then
-            echo "The latest committed datetime of a .svx file is newer than the latest commit datetime of docs/surveys/pell.3d"
-            sudo apt-get install -y survex
-            cavern Survex/pell.svx
-            rm pell.err
+          echo "The latest commit of pell.3d is $latest_commit_build"
+          
+          # Rebuild survey if needed pell.3d is older than any Therion/ dir change
+          if [ -z "$latest_commit" ] || [ "$latest_commit" -gt "$latest_commit_build" ]; then
+            echo "The latest committed datetime of a Therion file is newer than the latest commit datetime of docs/surveys/pell.3d"
+            sudo apt-get install -y therion
+            log=$(therion Therion/pell.thconfig)
+            rm therion.log
             install -D pell.3d docs/surveys/pell.3d
             rm pell.3d
+            install -D pell-plan.pdf docs/surveys/pell-plan.pdf
           else
-            echo "The latest committed datetime of a .svx file is not newer than the latest commit datetime of docs/surveys/pell.3d"
+            echo "The latest committed datetime of a Therion file is not newer than the latest commit datetime of docs/surveys/pell.3d"
             git checkout origin/build -- docs/surveys
-          fi
-
-          # Get CaveView.js builds
-          local=$(git show origin/build:docs/CaveView/js/CaveView2.js | gawk -F "'" '/VERSION =/{print $2}' || 0)
-          remote=$(curl -s https://api.github.com/repos/aardgoose/CaveView.js/releases/latest | jq -r '.name')
-          echo "Local CaveView version is $local"
-          echo "Remote CaveView version is $remote"
-
-          # Update CaveView.js if needed
-          if [ -z "$local" ] || [ "$local" != "$remote" ]; then
-            echo "Updating CaveView from $local to $remote"
-            wget https://github.com/aardgoose/CaveView.js/releases/latest/download/CaveView.zip -O docs/CaveView.zip
-            unzip docs/CaveView.zip -d docs/
-            rm docs/CaveView.zip
-            changes=true
-          else
-            echo "Local CaveView version $local is up to date"
-            git checkout origin/build -- docs/CaveView
           fi
 
       - name: Push changes

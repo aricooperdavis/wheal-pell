@@ -1,0 +1,25 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -787.40 -629.92 3622.05 1023.62
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2024-01-25.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2024-01-25-ee -projection extended
+
+point 0.0 0.0 station -name 1
+
+point 1372.8385 70.41232 station -name 7
+
+point 1462.6709 375.2283 station -name 6
+
+point 2068.4353 -12.313724 station -name 8
+
+point 553.65753 -77.99339 station -name 3
+
+point 571.2938 131.26007 station -name 4
+
+point 371.9819 55.785915 station -name 2
+
+point 900.47656 69.88397 station -name 5
+
+endscrap
