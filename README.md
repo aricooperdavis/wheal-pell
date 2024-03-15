@@ -36,7 +36,7 @@ We're surveying using SexyTopo. If you want to contribute your own survey data t
 - Export your survey from SexyTopo using the "Therion" export format.
 - Copy your exported data into the `Therion` directory in its own directory.
 - In Therion's Map View, draw over your `.plan.th2` and `.ee.th2` files, `id`-ing any features (e.g. walls) that have to join with features in other survey scraps.
-- In your `.th` file, detail your `team`.
+- In your `.th` file, detail your `team` and the `date`.
 - In `Therion/pell.th`:
   - `input` your `.th` file in the `survey` section.
   - `join` your `id`-ed features in the `survey` section.
