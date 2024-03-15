@@ -14,6 +14,8 @@ encoding utf-8
         # join <point1> <point2> ... [OPTIONS]
         join e1@2023-11-25 e2@2024-01-14
         join w1@2023-11-25 w2@2024-01-14
+        join n1@2024-01-14 n2@2024-01-25
+        join s1@2024-01-14 s2@2024-01-25
 
         centreline
 
