@@ -1,13 +1,13 @@
 encoding  utf-8
 ##XTHERION## xth_me_area_adjust -8110.24 -8188.98 3779.53 1574.80
-##XTHERION## xth_me_area_zoom_to 50
+##XTHERION## xth_me_area_zoom_to 25
 ##XTHERION## xth_me_image_insert {1606.04 1 1.0} {-2968.2799999999997 10} 2024-01-14.plan.xvi 0 {}
 
 
 
 scrap 2024-01-14-plan -projection plan -scale [-8110.24 -8188.98 3779.53 -8188.98 0.0 0.0 302.000158 0.0 m]
 
-line wall
+line wall -id n1
   -4710.0 -5770.0
   -4710.0 -5770.0 -4706.0 -5798.0 -4736.0 -5806.0
   -4766.0 -5814.0 -4952.0 -5874.0 -4974.0 -5872.0
@@ -210,7 +210,7 @@ line wall
   smooth off
 endline
 
-line wall
+line wall -id s1
   -6496.0 -6544.0
   -6456.0 -6528.0 -6252.0 -6460.0 -6200.0 -6460.0
   -6148.0 -6460.0 -6016.0 -6444.0 -5948.0 -6428.0
@@ -300,33 +300,33 @@ point -1458.1401 -4486.472 station -name 25
 
 point 396.57104 -307.37308 label -text " Park Shaft " -scale m
 
-point 1600.8353 -3215.1997 label -text " Squeeze " -scale xs
+point 1756.8353 -3191.1997 label -text " Squeeze " -scale xs
 
-point 1336.3693 -3124.9714 label -text " squeeze " -scale xs
+point 1332.3693 -3088.9714 label -text " squeeze " -scale xs
 
-point 521.3881 -3377.3127 label -text " Downward squeeze " -scale xs
+point 473.3881 -3285.3127 label -text " Downward squeeze " -scale xs
 
-point 951.105 -3255.8691 label -text " Stacked deads, both sides " -scale xs
+point 951.105 -3235.8691 label -text " Stacked deads, both sides " -scale xs
 
 point 1115.2728 -3520.7656 label -text "  " -scale xs
 
-point 582.8632 -3875.5667 label -text " 2m climb up stacked deads " -scale xs
+point 586.8632 -3955.5667 label -text " 2m climb up stacked deads " -scale xs
 
-point -142.75475 -4305.0737 label -text " Upward winze " -scale xs
+point -90.75475 -4357.0737 label -text " Upward winze " -scale xs
 
-point -468.82877 -4894.3506 label -text " Winze with handline " -scale xs
+point -292.82877 -4934.3506 label -text " Winze with handrail" -scale xs
 
-point -861.7111 -4762.7993 label -text " Built shelf " -scale xs
+point -897.7111 -4822.7993 label -text " Built shelf " -scale xs
 
 point -710.97424 -4549.4033 label -text " Drops to lower level " -scale xs
 
-point -2775.8167 -5618.8516 label -text " Backfilled upward sloping crawl " -scale xs
+point -2743.8167 -5670.8516 label -text " Backfilled upward sloping crawl " -scale xs
 
-point -4312.1934 -5844.3916 label -text " 'Unlikely crawl' (says Ari!) " -scale xs
+point -4300.1934 -5932.3916 label -text " 'Unlikely crawl' (says Ari!) " -scale xs
 
-point -4683.146 -5754.976 label -text " CBC yellow arrow, downward passage " -scale xs
+point -4731.146 -5650.976 label -text " CBC yellow arrow, downward passage " -scale xs
 
-point -5723.961 -6391.709 label -text " Passage heading upwards " -scale xs
+point -5635.961 -6455.709 label -text " Passage heading upwards " -scale xs
 
 endscrap
 
