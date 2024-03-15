@@ -40,6 +40,7 @@ jobs:
           # Rebuild survey if needed pell.3d is older than any Therion/ dir change
           if [ -z "$latest_commit" ] || [ "$latest_commit" -gt "$latest_commit_build" ]; then
             echo "The latest committed datetime of a Therion file is newer than the latest commit datetime of docs/surveys/pell.3d"
+            sudo apt-get update
             sudo apt-get install -y therion
             log=$(therion Therion/pell.thconfig)
             rm therion.log
