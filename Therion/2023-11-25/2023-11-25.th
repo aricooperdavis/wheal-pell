@@ -8,8 +8,13 @@ input "2023-11-25.ee.th2"
 
 	centreline
 	
+		date 2023.11.25
+
 		team "Ari Cooper-Davis" instruments
 		team "Matt Palmer" notes
+
+		cs EPSG:27700
+		fix 17 171564 51200 -35
 	
 		data normal from to length compass clino
 		

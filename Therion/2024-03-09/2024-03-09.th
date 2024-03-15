@@ -11,6 +11,8 @@ input "2024-03-09.ee.th2"
 	
 	centreline
 
+		date 2024.03.09
+
 		team "Ari Cooper-Davis" instruments
 		team "Matt Palmer" notes
 	
