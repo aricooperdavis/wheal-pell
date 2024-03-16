@@ -1,8 +1,6 @@
 encoding utf-8
 source pell.th
 
-cs EPSG:27700
-
 export model -format survex -o pell.3d
 export map -projection plan \
     -layout-scale 1 500\
