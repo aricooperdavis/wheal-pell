@@ -1,8 +1,15 @@
 encoding utf-8
 source pell.th
 
+layout pell-layout
+
+    scale 1 500
+    grid-size 1 1 1 metres
+    colour map-fg [80 80 80]
+    symbol-hide group all
+    symbol-show line wall
+
+endlayout
+
 export model -format survex -o pell.3d
-export map -projection plan \
-    -layout-scale 1 500\
-    -layout-grid-size 1 1 1 metres \
-    -o pell-plan.pdf
+export map -layout pell-layout -projection plan -o pell-plan.pdf
