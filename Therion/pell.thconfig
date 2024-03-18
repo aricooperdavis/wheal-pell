@@ -6,8 +6,8 @@ layout pell-layout
     scale 1 500
     grid-size 1 1 1 metres
     colour map-fg [80 80 80]
-    symbol-hide group all
-    symbol-show line wall
+    symbol-set BCRA
+    symbol-hide group centerline
 
 endlayout
 
