@@ -50,7 +50,7 @@ line wall
   smooth off
 endline
 
-line wall -id w2
+line wall -id w1
   26.0 -154.0
   26.0 -154.0 128.0 -322.0 120.0 -314.0
   112.0 -306.0 146.0 -350.0 100.0 -382.0
@@ -75,7 +75,7 @@ line wall -id w2
   smooth off
 endline
 
-line wall -id e2
+line wall -id e1
   1758.0 -2860.0
   1758.0 -2860.0 1678.0 -2936.0 1668.0 -2908.0
   1658.0 -2880.0 1598.0 -2854.0 1572.0 -2782.0
