@@ -56,6 +56,10 @@ line border -id water-3 -reverse on -subtype invisible
   smooth off
 endline
 
+point -4213.0 499.0 water-flow -orientation 258.5
+
+point -5093.0 687.0 water-flow -orientation 258.5
+
 area water
   e1
   water-3
