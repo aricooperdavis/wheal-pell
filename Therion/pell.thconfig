@@ -3,8 +3,8 @@ source pell.th
 
 layout pell-layout
 
-    # scale 1 500
-    # grid-size 1 1 1 metres
+    scale 1 500
+    grid-size 25 25 25 metres
     colour map-fg [80 80 80]
     symbol-set AUT
     symbol-hide group centerline

@@ -1,0 +1,22 @@
+encoding  utf-8
+##XTHERION## xth_me_area_adjust -1968.50 -1968.50 8346.46 944.88
+##XTHERION## xth_me_area_zoom_to 25
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} Pell4.ee.xvi 0 {}
+
+
+
+scrap 2024-04-14-ee -projection extended -scale [-7244.09 -2047.24 1574.80 -2047.24 0.0 0.0 223.99980599999998 0.0 m]
+
+point 6203.678 -1058.1946 station -name 29
+
+point 6504.4927 -1035.4691 station -name 30
+
+point 5112.79 -1031.7596 station -name 27
+
+point 5365.029 -1055.4847 station -name 28
+
+point 4875.8823 -1044.728 station -name 26
+
+endscrap
+
+
