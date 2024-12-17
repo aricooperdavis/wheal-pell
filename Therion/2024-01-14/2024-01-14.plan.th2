@@ -1,6 +1,6 @@
 encoding  utf-8
 ##XTHERION## xth_me_area_adjust -8110.24 -8188.98 3779.53 1574.80
-##XTHERION## xth_me_area_zoom_to 50
+##XTHERION## xth_me_area_zoom_to 25
 ##XTHERION## xth_me_image_insert {1606.04 1 1.0} {-2968.2799999999997 10} 2024-01-14.plan.xvi 0 {}
 
 
@@ -143,6 +143,8 @@ line wall -id e2
   1782.0 -3066.0 1818.0 -3042.0 1856.0 -3034.0
   smooth off
 endline
+
+point 20.0 -6188.0 label -text "<it>East Pye Shaft" -scale l
 
 point -704.0 -4500.0 label -text " Passage in floor " -scale s
 
@@ -298,11 +300,9 @@ point -260.71338 -4177.951 station -name 20
 
 point -1458.1401 -4486.472 station -name 25
 
-point 432.0 -478.0 height -value [-20? m]
+point -84.0 -472.0 passage-height -value [+40 -20]
 
-point 432.0 -426.0 height -value [+40? m]
-
-point 510.57104 -355.37308 label -text " Park shaft " -scale l
+point 432.57104 -435.37308 label -text "South Park Shaft" -scale l -align r
 
 point 1844.0 -2934.0 continuation
 

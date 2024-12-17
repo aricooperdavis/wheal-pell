@@ -1,6 +1,6 @@
 encoding  utf-8
 ##XTHERION## xth_me_area_adjust -679.1811 -6742.1733 2883.9056200000005 1072.88206
-##XTHERION## xth_me_area_zoom_to 100
+##XTHERION## xth_me_area_zoom_to 25
 ##XTHERION## xth_me_image_insert {360.21 1 1.0} {-266.9499999999998 2} 2023-11-25.plan.xvi 0 {}
 
 
@@ -73,9 +73,9 @@ line wall -id w1
   smooth off
 endline
 
-point 255.0 99.0 height -value [+30? m]
+point -157.0 -65.0 passage-height -value [+30]
 
-point 313.0 158.0 label -text " Winze " -scale m
+point 313.0 78.0 label -text "Squidler Shaft" -scale l -align r
 
 point -105.0 269.0 continuation
 
@@ -189,9 +189,9 @@ point 2209.1448 -5564.9033 station -name 16
 
 point 1545.054 -4152.376 station -name 13
 
-point 1812.0 -3290.0 height -value [+35? m]
+point 1252.0 -3302.0 passage-height -value [+40]
 
-point 1951.7665 -3215.6382 label -text " Entrance shaft " -scale l
+point 1811.7665 -3303.6382 label -text "Park Sump Shaft<br>(Entrance)" -scale l -align r
 
 endscrap
 
