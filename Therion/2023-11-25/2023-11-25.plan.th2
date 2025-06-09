@@ -73,7 +73,7 @@ line wall -id w1
   smooth off
 endline
 
-point -157.0 -65.0 passage-height -value [+30]
+point -157.0 -65.0 height -value [+30? m]
 
 point 313.0 158.0 label -text "Squidler Shaft" -scale m
 
@@ -189,7 +189,7 @@ point 2209.1448 -5564.9033 station -name 16
 
 point 1545.054 -4152.376 station -name 13
 
-point 1252.0 -3302.0 passage-height -value [+40]
+point 1252.0 -3302.0 height -value [+40? m]
 
 point 1951.7665 -3215.6382 label -text "Park Sump Shaft" -scale m
 

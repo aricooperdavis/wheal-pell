@@ -140,8 +140,6 @@ line wall -id e2
   smooth off
 endline
 
-point 20.0 -6188.0 label -text "<it>East Pye Shaft" -scale l
-
 line wall
   -534.0 -4946.0
   -534.0 -4946.0 -544.0 -4820.0 -500.0 -4760.0
@@ -324,7 +322,7 @@ point 684.0 -3778.0 label -text "Walled climb" -scale xs
 
 point 672.0 -3832.0 height -value [+2? m]
 
-point -178.0 -5484.0 label -text "Railings Shaft" -scale m
+point -178.0 -5484.0 label -text "East Pye Shaft" -scale m
 
 point -704.0 -4500.0 label -text "Passage in floor" -scale xs
 
