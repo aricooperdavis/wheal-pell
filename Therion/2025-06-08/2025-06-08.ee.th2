@@ -1,0 +1,107 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1574.80 -5118.11 20629.92 1259.84
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2025-06-08.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2025-06-08_ee -projection extended
+
+point 5945.151 -3708.2197 station -name 17
+
+point 3925.5583 -3714.9685 station -name 10
+
+point 5094.4424 -3513.8757 station -name 14
+
+point 10516.277 -3869.8708 station -name 25
+
+point 12066.269 -3869.6658 station -name 28
+
+point 494.64017 -3773.7021 station -name 6
+
+point 2245.1733 -3752.2732 station -name 8
+
+point 5563.389 -3668.2327 station -name 16
+
+point 11043.101 -3857.2703 station -name 26
+
+point 15511.766 -3836.9033 station -name 36
+
+point 8678.984 -3835.1296 station -name 22
+
+point 4092.275 -3616.985 station -name 11
+
+point 4747.085 -3503.9658 station -name 13
+
+point 210.33989 -1589.0122 station -name 3
+
+point 1577.526 -3759.099 station -name 7
+
+point 12996.825 -3861.1829 station -name 29
+
+point 17870.344 -3841.36 station -name 40
+
+point 14201.522 -3799.4802 station -name 33
+
+point 396.80136 -3621.3027 station -name 5
+
+point 8232.953 -3839.7073 station -name 21
+
+point 13406.699 -3857.8784 station -name 30
+
+point 16988.814 -3799.725 station -name 42
+
+point 6295.6064 -3671.4326 station -name 18
+
+point 9674.782 -3880.9011 station -name 24
+
+point 18944.36 -3741.6953 station -name 43
+
+point 3168.0574 -3771.7322 station -name 9
+
+point 8985.663 -3871.805 station -name 23
+
+point 5235.7134 -3600.8496 station -name 15
+
+point 14727.25 -3803.0237 station -name 34
+
+point 15101.272 -3808.298 station -name 35
+
+point 0.0 0.0 station -name 1
+
+point 19035.254 -2089.8452 station -name 44
+
+point 293.33835 -2737.9 station -name 4
+
+point 7292.78 -3656.2832 station -name 19
+
+point 13714.079 -3862.8245 station -name 31
+
+point 16335.697 -3796.2097 station -name 38
+
+point 11776.547 -3815.9182 station -name 27
+
+point 116.43097 -637.18475 station -name 2
+
+point 8044.7495 -3822.1448 station -name 20
+
+point 18852.027 -3816.9258 station -name 41
+
+point 15916.323 -3844.9465 station -name 37
+
+point 16627.107 -3818.6814 station -name 39
+
+point 4223.1562 -3498.646 station -name 12
+
+point 14032.774 -3775.9124 station -name 32
+
+point 240.9079 41.472218 label -text "traverse line head height" -scale xs
+
+point 255.68723 -654.2908 label -text "below deviation" -scale xs
+
+point 329.58362 -1620.6285 label -text "level 1" -scale xs
+
+point 444.4072 -2762.0437 label -text "level 2" -scale xs
+
+point 526.2617 -3632.8843 label -text "level 3" -scale xs
+
+endscrap

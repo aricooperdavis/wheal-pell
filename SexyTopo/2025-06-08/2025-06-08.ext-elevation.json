@@ -1,0 +1,79 @@
+{
+  "paths": [],
+  "labels": [
+    {
+      "location": {
+        "x": 3.059530258178711,
+        "y": -0.5266971588134766
+      },
+      "text": "traverse line head height",
+      "colour": "BLACK",
+      "size": 0.5844591856002808
+    },
+    {
+      "location": {
+        "x": 3.247227668762207,
+        "y": 8.309493064880371
+      },
+      "text": "below deviation",
+      "colour": "BLACK",
+      "size": 0.5844591856002808
+    },
+    {
+      "location": {
+        "x": 4.185711860656738,
+        "y": 20.581981658935547
+      },
+      "text": "level 1",
+      "colour": "BLACK",
+      "size": 0.5844591856002808
+    },
+    {
+      "location": {
+        "x": 5.6439714431762695,
+        "y": 35.07795333862305
+      },
+      "text": "level 2",
+      "colour": "BLACK",
+      "size": 0.5844591856002808
+    },
+    {
+      "location": {
+        "x": 6.683524131774902,
+        "y": 46.137630462646484
+      },
+      "text": "level 3",
+      "colour": "BLACK",
+      "size": 0.5844591856002808
+    },
+    {
+      "location": {
+        "x": 53.77116394042969,
+        "y": 41.55923843383789
+      },
+      "text": "climb over run-in stope",
+      "colour": "BROWN",
+      "size": 2.0517115592956543
+    },
+    {
+      "location": {
+        "x": 169.93768310546875,
+        "y": 44.2481803894043
+      },
+      "text": "little ladder step",
+      "colour": "BROWN",
+      "size": 1.4122170209884644
+    },
+    {
+      "location": {
+        "x": 234.55438232421875,
+        "y": 22.20189094543457
+      },
+      "text": "long drop shaft",
+      "colour": "BROWN",
+      "size": 1.4369943141937256
+    }
+  ],
+  "symbols": [],
+  "x-sections": []
+}

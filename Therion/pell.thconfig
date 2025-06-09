@@ -1,4 +1,4 @@
-encoding utf-8
+encoding  utf-8
 source pell.th
 
 layout pell-layout
@@ -7,9 +7,11 @@ layout pell-layout
     grid-size 25 25 25 metres
     colour map-fg [80 80 80]
     symbol-set AUT
-    symbol-hide group centerline
+    # symbol-hide group centerline
 
 endlayout
 
-export model -format survex -o pell.3d
+cs EPSG:27700
+
+export model -format survex -o pell.3d -o pell.kml
 export map -layout pell-layout -projection plan -o pell-plan.pdf

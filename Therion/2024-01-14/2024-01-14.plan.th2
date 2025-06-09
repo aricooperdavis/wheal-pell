@@ -95,10 +95,6 @@ line wall -id e1
   smooth off
 endline
 
-point 684.0 -3778.0 label -text " Walled climb " -scale xs
-
-point 672.0 -3832.0 height -value [+2? m]
-
 line chimney -id climb-1 -close on
   524.0 -3748.0
   498.0 -3748.0 490.0 -3746.0 472.0 -3758.0
@@ -145,8 +141,6 @@ line wall -id e2
 endline
 
 point 20.0 -6188.0 label -text "<it>East Pye Shaft" -scale l
-
-point -704.0 -4500.0 label -text " Passage in floor " -scale s
 
 line wall
   -534.0 -4946.0
@@ -300,13 +294,15 @@ point -260.71338 -4177.951 station -name 20
 
 point -1458.1401 -4486.472 station -name 25
 
-point -84.0 -472.0 passage-height -value [+40 -20]
+point 432.0 -478.0 height -value [-50? m]
 
-point 432.57104 -435.37308 label -text "South Park Shaft" -scale l -align r
+point 432.0 -426.0 height -value [+40? m]
+
+point 510.57104 -355.37308 label -text "South Park Shaft" -scale m
 
 point 1844.0 -2934.0 continuation
 
-point 1398.3693 -3292.9714 label -text " Roof collapse (crawl)  " -scale xs
+point 1398.3693 -3292.9714 label -text "Roof collapse (crawl)" -scale xs
 
 point 492.0 -3358.0 continuation
 
@@ -316,7 +312,7 @@ point -596.0 -5042.0 continuation
 
 point -2761.8167 -5614.8516 continuation
 
-point -4698.0 -5630.0 label -text " CBC arrow " -scale xs
+point -4698.0 -5630.0 label -text "CBC arrow" -scale xs
 
 point -4692.0 -5700.0 continuation
 
@@ -324,6 +320,12 @@ point -4316.0 -5898.0 continuation
 
 point -5653.961 -6435.709 continuation
 
+point 684.0 -3778.0 label -text "Walled climb" -scale xs
+
+point 672.0 -3832.0 height -value [+2? m]
+
+point -178.0 -5484.0 label -text "Railings Shaft" -scale m
+
+point -704.0 -4500.0 label -text "Passage in floor" -scale xs
+
 endscrap
-
-

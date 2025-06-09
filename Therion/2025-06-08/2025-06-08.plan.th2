@@ -1,0 +1,118 @@
+encoding  utf-8
+##XTHERION## xth_me_area_adjust -14330.71 -4881.89 2440.94 1259.84
+##XTHERION## xth_me_area_zoom_to 25
+##XTHERION## xth_me_image_insert {-1442.3600000000006 1 1.0} {-2926.7200000000003 17} 2025-06-08.plan.xvi 0 {}
+
+
+
+scrap 2025-06-08_plan -projection plan -scale [-14330.71 -4881.89 2440.94 -4881.89 0.0 0.0 425.99990999999994 0.0 m]
+
+point -1442.3612 -2926.7222 station -name 17
+
+point 248.23148 -2930.0686 station -name 10
+
+point -811.00256 -3337.962 station -name 14
+
+point -5774.6914 -3561.404 station -name 25
+
+point -7064.1895 -3386.5898 station -name 28
+
+point -144.79451 16.268192 station -name 6
+
+point 365.05426 -1650.9568 station -name 8
+
+point -1109.4546 -3113.5789 station -name 16
+
+point -6297.3135 -3495.0076 station -name 26
+
+point -10048.485 -2112.1694 station -name 36
+
+point -3945.183 -3601.3208 station -name 22
+
+point 83.16472 -2953.4626 station -name 11
+
+point -464.598 -3312.2524 station -name 13
+
+point -29.496908 2.1348271 station -name 3
+
+point 97.98872 -1039.0507 station -name 7
+
+point -7799.4194 -2816.1748 station -name 29
+
+point -11738.872 -1777.1692 station -name 40
+
+point -8851.323 -2507.1484 station -name 33
+
+point -81.38326 -58.239815 station -name 5
+
+point -3532.3245 -3432.5254 station -name 21
+
+point -8200.18 -2730.2212 station -name 30
+
+point -10977.011 -1333.705 station -name 42
+
+point -1792.7205 -2934.9214 station -name 18
+
+point -4934.675 -3611.26 station -name 24
+
+point -12595.895 -2070.7395 station -name 43
+
+point 831.8048 -2447.1094 station -name 9
+
+point -4248.026 -3552.9697 station -name 23
+
+point -792.8048 -3197.8677 station -name 15
+
+point -9310.944 -2251.9258 station -name 34
+
+point -9682.187 -2297.4517 station -name 35
+
+point 0.0 0.0 station -name 1
+
+point -12584.659 -2160.9377 station -name 44
+
+point -101.60919 43.226963 station -name 4
+
+point -2749.1929 -3216.907 station -name 19
+
+point -8507.018 -2748.4707 station -name 31
+
+point -10851.772 -1972.0419 station -name 38
+
+point -7009.316 -3671.0664 station -name 27
+
+point -99.50284 -60.45955 station -name 2
+
+point -3410.0852 -3575.627 station -name 20
+
+point -12648.335 -2146.7344 station -name 41
+
+point -10452.905 -2101.5803 station -name 37
+
+point -10879.132 -1681.9187 station -name 39
+
+point -26.646843 -3024.6768 station -name 12
+
+point -8684.229 -2483.588 station -name 32
+
+point -63.28165000000001 -2849.4116 label -text "Collapse" -scale xs
+
+point -1568.1427 -2995.667 label -text "Puddle crouch" -scale xs
+
+point -7645.032 -2711.5308 label -text "Big open stope" -scale xs
+
+point -8478.742 -2457.0706 label -text "Little ladder step" -scale xs
+
+point -9099.4 -2186.6628 label -text "Backfilled Shaft" -scale m
+
+point -10733.982 -1577.2827 label -text "Wet wade" -scale xs
+
+point -12768.975 -1807.6113 label -text "Long Drop Shaft" -scale m
+
+point -12768.0 -1968.0 height -value [+21 m]
+
+
+
+endscrap
+
+

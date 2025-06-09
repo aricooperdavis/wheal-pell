@@ -351,17 +351,17 @@ point -1910.6846 -785.7705 station -name 7
 
 point -1509.8479 -812.3766 continuation
 
-point -1539.969 -338.79968 label -text " Downward stope " -scale xs
+point -1539.969 -338.79968 label -text "Downward stope" -scale xs
 
-point -3423.3154 -868.9745 label -text " Run-in " -scale xs
+point -3423.3154 -868.9745 label -text "Run-in" -scale xs
 
-point -3271.9573 143.77243 label -text " Run-in " -scale xs
+point -3271.9573 143.77243 label -text "Run-in" -scale xs
 
-point -2687.9573 42.772430000000014 label -text " Run-in " -scale xs
+point -2687.9573 42.772430000000014 label -text "Run-in" -scale xs
 
-point -2621.4849 -835.5469 label -text " Run-in (stream issues) " -scale xs
+point -2621.4849 -835.5469 label -text "Run-in (stream issues)" -scale xs
 
-point -2215.4849 -1105.5469 label -text " Back-filled " -scale xs
+point -2215.4849 -1105.5469 label -text "Back-filled" -scale xs
 
 endscrap
 

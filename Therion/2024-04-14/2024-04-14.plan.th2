@@ -79,49 +79,49 @@ point -4298.33 452.101 station -name 28
 
 point -3834.7644 530.6341 station -name 26
 
-point -5610.9805 740.8918 label -text " run-in " -scale xs
+point -5610.9805 740.8918 label -text "run-in" -scale xs
 
-point -5464.979 461.21432 label -text " drill hole " -scale xs
+point -5464.979 461.21432 label -text "drill hole" -scale xs
 
-point -4750.664 630.59424 soda-straw -scale s
+point -4750.664 630.59424 soda-straw -scale xs
 
-point -4853.5186 624.91516 soda-straw -scale s
+point -4853.5186 624.91516 soda-straw -scale xs
 
-point -4807.455 614.81903 soda-straw -scale s
+point -4807.455 614.81903 soda-straw -scale xs
 
-point -5494.369 669.7874 pebbles -scale m
+point -5494.369 669.7874 pebbles -scale xs
 
-point -5548.4087 655.56647 pebbles -scale m
+point -5548.4087 655.56647 pebbles -scale xs
 
-point -5567.37 618.59216 pebbles -scale m
+point -5567.37 618.59216 pebbles -scale xs
 
-point -5570.214 645.1379 pebbles -scale m
+point -5570.214 645.1379 pebbles -scale xs
 
-point -5538.9277 687.8004 pebbles -scale m
+point -5538.9277 687.8004 pebbles -scale xs
 
-point -5495.3174 683.0601 pebbles -scale m
+point -5495.3174 683.0601 pebbles -scale xs
 
-point -5459.291 662.20294 pebbles -scale m
+point -5459.291 662.20294 pebbles -scale xs
 
-point -5416.6284 663.15094 pebbles -scale m
+point -5416.6284 663.15094 pebbles -scale xs
 
-point -5425.161 624.2805 pebbles -scale m
+point -5425.161 624.2805 pebbles -scale xs
 
-point -5467.8237 642.29364 pebbles -scale m
+point -5467.8237 642.29364 pebbles -scale xs
 
-point -5516.175 642.29364 pebbles -scale m
+point -5516.175 642.29364 pebbles -scale xs
 
-point -5542.72 604.3713 pebbles -scale m
+point -5542.72 604.3713 pebbles -scale xs
 
-point -5498.1616 620.4883 pebbles -scale m
+point -5498.1616 620.4883 pebbles -scale xs
 
-point -5555.045 669.7874 pebbles -scale m
+point -5555.045 669.7874 pebbles -scale xs
 
-point -5454.551 592.99457 pebbles -scale m
+point -5454.551 592.99457 pebbles -scale xs
 
-point -5373.966 651.77423 pebbles -scale m
+point -5373.966 651.77423 pebbles -scale xs
 
-point -5351.2124 500.08478 gradient -orientation 333.43494 -scale m
+point -5351.2124 500.08478 gradient -orientation 333.43494 -scale xs
 
 endscrap
 

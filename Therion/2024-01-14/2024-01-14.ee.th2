@@ -86,12 +86,10 @@ point 6031.9243 -38.157063 station -name 20
 
 point 7548.8096 -124.204346 station -name 25
 
-point 6672.1514 -206.54439 label -text " hole to lower level " -scale xs
+point 6672.1514 -206.54439 label -text "hole to lower level" -scale xs
 
-point 6807.015 7.6859393 label -text "  " -scale xs
+point 6713.9233 231.76253 label -text "Winze with handline" -scale xs
 
-point 6713.9233 231.76253 label -text " Winze with handline " -scale xs
-
-point 6182.081 -289.40112 label -text " Dig? " -scale xs
+point 6182.081 -289.40112 label -text "Dig?" -scale xs
 
 endscrap

@@ -75,7 +75,7 @@ endline
 
 point -157.0 -65.0 passage-height -value [+30]
 
-point 313.0 78.0 label -text "Squidler Shaft" -scale l -align r
+point 313.0 158.0 label -text "Squidler Shaft" -scale m
 
 point -105.0 269.0 continuation
 
@@ -191,7 +191,7 @@ point 1545.054 -4152.376 station -name 13
 
 point 1252.0 -3302.0 passage-height -value [+40]
 
-point 1811.7665 -3303.6382 label -text "Park Sump Shaft<br>(Entrance)" -scale l -align r
+point 1951.7665 -3215.6382 label -text "Park Sump Shaft" -scale m
 
 endscrap
 
