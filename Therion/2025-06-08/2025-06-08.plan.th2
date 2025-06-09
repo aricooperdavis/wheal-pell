@@ -103,15 +103,13 @@ point -7645.032 -2711.5308 label -text "Big open stope" -scale xs
 
 point -8478.742 -2457.0706 label -text "Little ladder step" -scale xs
 
-point -9099.4 -2186.6628 label -text "Backfilled Shaft" -scale m
+point -9099.4 -2186.6628 label -text "Prosper Shaft" -scale m
 
 point -10733.982 -1577.2827 label -text "Wet wade" -scale xs
 
-point -12768.975 -1807.6113 label -text "Long Drop Shaft" -scale m
+point -12768.975 -1807.6113 label -text "Baldhu Shaft" -scale m
 
 point -12768.0 -1968.0 height -value [+21 m]
-
-
 
 endscrap
 
