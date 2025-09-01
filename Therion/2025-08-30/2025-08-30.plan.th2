@@ -1,0 +1,165 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1811.02 -4960.63 13543.31 9842.52
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "2025-08-30.plan.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap 2025-08-30-plan -projection plan
+
+point 47.77233 -122.55675 station -name 2
+
+point -102.810036 -977.2176 station -name 3
+
+point -168.12648 -1684.5306 station -name 4
+
+point -220.51752 -1925.6559 station -name 5
+
+point -151.5599 -2621.5625 station -name 6
+
+point -23.983322 -3011.936 station -name 7
+
+point 54.876877 58.375164 station -name 8
+
+point 39.157494 -22.49407 station -name 9
+
+point 176.39476 118.281654 station -name 10
+
+point 685.77893 348.18814 station -name 11
+
+point 1933.0243 402.28946 station -name 12
+
+point 2017.5768 275.82547 station -name 13
+
+point 2640.1543 249.82347 station -name 14
+
+point 3417.766 233.72496 station -name 15
+
+point 3920.1602 779.91266 station -name 16
+
+point 3969.4722 689.60925 station -name 17
+
+point 3647.3 1247.9402 station -name 18
+
+point 4398.761 1615.2317 station -name 19
+
+point 4746.2974 1588.2782 station -name 20
+
+point 4943.1777 1758.9952 station -name 21
+
+point 4702.4697 1929.9907 station -name 22
+
+point 4960.376 2216.304 station -name 23
+
+point 4496.9165 2470.5437 station -name 24
+
+point 5052.863 3466.7742 station -name 25
+
+point 5150.7827 3747.1628 station -name 26
+
+point 5001.6875 4214.1636 station -name 27
+
+point 5404.9053 4513.5166 station -name 28
+
+point 5576.8237 4706.8774 station -name 29
+
+point 4949.01 5676.864 station -name 30
+
+point 5043.6016 5724.3516 station -name 31
+
+point 4304.389 7053.7627 station -name 32
+
+point 4287.735 7311.561 station -name 33
+
+point 4086.2422 7502.6997 station -name 34
+
+point 4045.521 7661.71 station -name 35
+
+point 3744.1262 7654.6895 station -name 36
+
+point 3938.6326 7384.139 station -name 37
+
+point 4208.501 7570.7124 station -name 38
+
+point 4421.8823 7920.44 station -name 39
+
+point 3665.0989 7610.249 station -name 40
+
+point 3672.314 7790.2607 station -name 41
+
+point 3509.5437 7843.502 station -name 42
+
+point 3567.5796 8030.9556 station -name 43
+
+point 5709.712 4358.9404 station -name 44
+
+point 6767.9673 4284.0166 station -name 45
+
+point 7100.183 3798.0378 station -name 46
+
+point 8090.0366 4380.513 station -name 47
+
+point 8666.534 4423.208 station -name 48
+
+point 9104.133 4212.8296 station -name 49
+
+point 9877.946 4639.7065 station -name 50
+
+point 9789.766 4638.6133 station -name 51
+
+point 10149.222 4784.812 station -name 52
+
+point 10287.772 4815.455 station -name 53
+
+point 10290.522 4983.8584 station -name 54
+
+point 10165.002 5280.672 station -name 55
+
+point 10536.946 5772.754 station -name 56
+
+point 10449.986 6184.0723 station -name 57
+
+point 10612.415 3934.3318 station -name 58
+
+point 10879.287 3744.3071 station -name 59
+
+point 11734.057 3516.627 station -name 60
+
+point -110.59746 -3336.7393 label -text " fliccan run in " -scale m
+
+point 18.011454 -2748.8125 label -text " radon cavern " -scale m
+
+point -37.106678 12.342273 label -text " long drop (baldhu) " -scale m
+
+point 3947.9316 732.90485 label -text " Junction " -scale xs
+
+point 4200.4243 849.01086 label -text " launder continues " -scale xs
+
+point 5211.957 2500.737 label -text " launder continues " -scale xs
+
+point 5339.3315 2712.227 label -text " way on " -scale xs
+
+point 5396.2095 2216.3477 label -text " way on " -scale xs
+
+point 5125.4365 3603.9333 label -text " ladder chain climb " -scale s
+
+point 5560.1416 4694.371 label -text " adit " -scale s
+
+point 4247.447 7290.2954 label -text " launder (flowing) " -scale xs
+
+point 5765.8765 4331.487 label -text " wet stope " -scale xs
+
+point 7441.098 3518.0112 label -text " shaft " -scale xs
+
+point 10142.692 4594.976 label -text " stops up backfilled " -scale m
+
+point 10082.324 5270.829 label -text " shovel " -scale m
+
+point 10529.831 5778.703 label -text " barrow " -scale m
+
+# point 10613.82 6604.1626 label -text " shaft " -scale m
+
+point 10493.086 5058.2305 label -text " backfilled from shaft ? " -scale m
+
+# point 11767.18 3491.6294 label -text " shaft (bolt climbed) " -scale xs
+
+endscrap

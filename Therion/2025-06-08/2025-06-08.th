@@ -9,6 +9,13 @@ input "2025-06-08.plan.th2"
 input "2025-06-08.ee.th2"
 	
 	centreline
+
+		date 2025.06.08
+
+		team "Ari Cooper-Davis" instruments
+
+		cs OSGB:SW
+		fix 34 71462 51143 19.57		# Fixes bottom of Prosper to Prosper surface
 	
 		data normal from to length compass clino
 		
