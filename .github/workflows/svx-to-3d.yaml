@@ -41,7 +41,8 @@ jobs:
           if [ -z "$latest_commit" ] || [ "$latest_commit" -gt "$latest_commit_build" ]; then
             echo "The latest committed datetime of a Therion file is newer than the latest commit datetime of docs/surveys/pell.3d"
             sudo apt-get update
-            sudo apt-get install -y therion
+            apt list --all-versions therion
+            sudo apt-get install -y therion=6.3.4 
             log=$(therion Therion/pell.thconfig)
             rm therion.log
             install -D Therion/pell.3d docs/surveys/pell.3d
