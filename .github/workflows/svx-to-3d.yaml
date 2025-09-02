@@ -22,38 +22,8 @@ jobs:
 
       - name: Prepare for GH Pages build
         run: |
-
-          # Find ts of latest edit within Therion/ dir
-          latest_commit=""
-          git ls-tree -r --name-only origin/main Therion/ | grep "Therion/.*$" | while read -r f; do
-            committed_at=$(git log origin/main -1 --format=%ct -- $f)
-            if [ -z "$latest_commit" ] || [ "$committed_at" -gt "$latest_commit" ]; then
-              latest_commit="$committed_at"
-            fi
-          done
-          echo "The latest commit of an .svx file is $latest_commit"
-
-          # Find ts of latest pell.3d build
-          latest_commit_build=$(git log origin/build -1 --format=%ct -- docs/surveys/pell.3d)
-          echo "The latest commit of pell.3d is $latest_commit_build"
-          
-          # Rebuild survey if needed pell.3d is older than any Therion/ dir change
-          if [ -z "$latest_commit" ] || [ "$latest_commit" -gt "$latest_commit_build" ]; then
-            echo "The latest committed datetime of a Therion file is newer than the latest commit datetime of docs/surveys/pell.3d"
-            sudo apt-get update
-            apt list --all-versions therion
-            apt list --all-versions proj-bin
-            sudo apt-get install -y therion proj-bin
-            log=$(therion Therion/pell.thconfig)
-            rm therion.log
-            install -D Therion/pell.3d docs/surveys/pell.3d
-            rm Therion/pell.3d
-            install -D Therion/pell-plan.pdf docs/surveys/pell-plan.pdf
-            rm Therion/pell-plan.pdf
-          else
-            echo "The latest committed datetime of a Therion file is not newer than the latest commit datetime of docs/surveys/pell.3d"
-            git checkout origin/build -- docs/surveys
-          fi
+          install -D Therion/pell-plan.pdf docs/surveys/pell-plan.pdf
+          install -D Therion/pell.3d docs/surveys/pell.3p
 
       - name: Push changes
         run: |
