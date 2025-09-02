@@ -1,5 +1,5 @@
 *autosave*
 *.log
-*.pdf
-*.3d
+# *.pdf
+# *.3d
 *.kml
