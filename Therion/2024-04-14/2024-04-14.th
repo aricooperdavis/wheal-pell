@@ -16,6 +16,9 @@ input "2024-04-14.ee.th2"
 		team "Ari Cooper-Davis" instruments
 		# team "Jeremy Fielden" dog
 		team "Matt Palmer" notes
+
+		cs OSGB:SW
+		fix 17 71389 51099 53
 	
 		data normal from to length compass clino
 		
