@@ -6,7 +6,7 @@ encoding utf-8
 survey 2024-01-25
 
 input "2024-01-25.plan.th2"
-input "2024-01-25.ee.th2"
+# input "2024-01-25.ee.th2"
 
 	
 	centreline
