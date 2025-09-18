@@ -14,5 +14,5 @@ endlayout
 cs EPSG:27700
 
 export model -format survex -o pell.3d
-export model -format survex -o pell.kml
 export map -layout pell-layout -projection plan -o pell-plan.pdf
+export map -layout pell-layout -projection [elevation 270 deg] -o pell-elevation.pdf
