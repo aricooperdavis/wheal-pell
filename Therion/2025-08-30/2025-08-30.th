@@ -18,7 +18,8 @@ input "2025-08-30.plan.th2"
 
 		cs OSGB:SW
 		fix 8 71419 51154 20.65		# Fixes bottom of long-drop to Baldhu surface
-		fix 60 71559 51202 19.80	# Fixes second bolt climbed shaft to Park Sump
+		fix 60 71561 51200 19.80	# Fixes second bolt climbed shaft to Park Sump
+		fix 61 71544 51238 19.11    # Fixes run-in at end of swimming barrow level to Squidler surface
 		
 		data normal from to length compass clino
 		
@@ -102,13 +103,13 @@ input "2025-08-30.plan.th2"
 		54	55	4.095	337.08	2.00		#  {from: 4.092 337.00 2.05, 4.097 337.14 1.96, 4.097 337.10 1.98}
 		55	56	7.838	37.08	-1.85		#  {from: 7.842 37.06 -1.83, 7.833 37.09 -1.84, 7.839 37.10 -1.87}
 		56	57	5.339	348.06	0.16		#  {from: 5.339 348.05 0.11, 5.340 348.03 0.22, 5.339 348.11 0.15}
-		57	61	5.445	20.00	3.97		#  Manually added by Ari from splay
+		57	61	5.445	20.00	3.97		#  Manually added by Ari from splay to show distance to run-in Squidler (?)
 		50	58	12.933	133.84	0.22		#  {from: 12.928 133.79 0.25, 12.950 133.89 0.21, 12.921 133.85 0.20}
 		58	59	4.164	125.45	2.13		#  {from: 4.170 125.40 2.22, 4.165 125.57 2.02, 4.156 125.38 2.14}
 		59	-	4.158	125.40	2.14	
 		59	60	11.234	104.92	0.30		#  {from: 11.236 104.95 0.28, 11.243 104.93 0.31, 11.224 104.87 0.32}
-		60	62	3.569	134.28	-9.99		#  Manually added by Ari from splay
-		60	-	12.726	147.82	83.80	
+		60	-	3.569	134.28	-9.99
+		60	62	12.726	147.82	83.80	    #  Manually added by Ari from splay to show height of ACRONYM
 		60	-	8.652	131.98	-78.16	
 	
 	

@@ -14,7 +14,7 @@ input "2023-11-25.plan.th2"
 		team "Matt Palmer" notes
 
 		cs OSGB:SW
-		fix 17 71563 51200 70
+		fix 17 71563 51200 70              # Fix entrance shaft based on satellite imagery
 	
 		data normal from to length compass clino
 		
