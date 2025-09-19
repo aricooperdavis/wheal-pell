@@ -1,15 +1,9 @@
 window.addEventListener('load', function() {
     let viewer = new CV2.CaveViewer('caveview-container', {
+        avenControls: false,
         home: 'CaveView/',
-        view: {
-            cameraType: CV2.CAMERA_ORTHOGRAPHIC,
-            shading: CV2.SHADING_SINGLE,
-            stations: true,
-            terrain: true,
-            terrainShading: "Satellite",
-            terrainOpacity: 0.6,
-            view: CV2.VIEW_PLAN,
-        },
+        surveyDirectory: 'surveys/',
+        terrainDirectory: 'terrain/',
         theme: {
             background: 'white',
             box: {
@@ -24,8 +18,15 @@ window.addEventListener('load', function() {
                 }
             }
         },
-        surveyDirectory: 'surveys/',
-        terrainDirectory: 'terrain/',
+        view: {
+            cameraType: CV2.CAMERA_ORTHOGRAPHIC,
+            shading: CV2.SHADING_SINGLE,
+            stations: true,
+            terrain: true,
+            terrainShading: "Satellite",
+            terrainOpacity: 0.7,
+            view: CV2.VIEW_PLAN,
+        },
     });
     viewer.addOverlay( 'OpenStreetMap', new OSMProvider() );
     viewer.addOverlay( 'Satellite', new MapBoxProvider( 'mapbox.satellite', 'pk.eyJ1IjoiYXJpY29vcGVyZGF2aXMiLCJhIjoiY2xydGQ2c2RzMDVreTJpbXhxcnF5ZWEzZSJ9.dB0-lgAaKzyrQ-MvVrrvPg') );
