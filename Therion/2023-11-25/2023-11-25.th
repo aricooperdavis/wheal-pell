@@ -101,7 +101,7 @@ input "2023-11-25.plan.th2"
 		16	-	0.424	82.72	45.43	
 		16	-	1.203	70.36	-67.63	
 		9	17	1.139	8.95	16.15		#  {from: 1.135 9.07 16.38, 1.143 8.84 16.00, 1.138 8.94 16.08}
-		17  18  35      0.00    90.00       #  Manually added as an estimate of entrance shaft depth
+		17  18  37      0.00    90.00       #  Manually added as an estimate of entrance shaft depth
 	
 	
 		extend start 1
