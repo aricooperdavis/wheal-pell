@@ -6,8 +6,8 @@ window.addEventListener('load', function() {
             shading: CV2.SHADING_SINGLE,
             stations: true,
             terrain: true,
-            terrainShading: "OpenStreetMap",
-            terrainOpacity: 0.7,
+            terrainShading: "Satellite",
+            terrainOpacity: 0.6,
             view: CV2.VIEW_PLAN,
         },
         theme: {
@@ -27,9 +27,10 @@ window.addEventListener('load', function() {
         surveyDirectory: 'surveys/',
         terrainDirectory: 'terrain/',
     });
-    viewer.addOverlay( 'Bing OS', new BingProvider( 'OrdnanceSurvey', 'Ap8PRYAyAVcyoSPio8EaFtDEpYJVNwEA70GqYj31EXa6jkT_SduFHMKeHnvyS4D_' ) );
     viewer.addOverlay( 'OpenStreetMap', new OSMProvider() );
     viewer.addOverlay( 'Satellite', new MapBoxProvider( 'mapbox.satellite', 'pk.eyJ1IjoiYXJpY29vcGVyZGF2aXMiLCJhIjoiY2xydGQ2c2RzMDVreTJpbXhxcnF5ZWEzZSJ9.dB0-lgAaKzyrQ-MvVrrvPg') );
+    viewer.addOverlay( 'OS 25 inch 1873-1888', new NLSProvider( '25_inch/cornwall_1st' ) );
+    viewer.addOverlay( 'OS 25 inch 1892-1948', new NLSProvider( '25_inch/cornwall' ) );
 
     let ui = new CV2.CaveViewUI(viewer);
     ui.loadCave('pell.3d');
