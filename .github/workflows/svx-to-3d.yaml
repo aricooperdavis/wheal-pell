@@ -23,6 +23,7 @@ jobs:
       - name: Prepare for GH Pages build
         run: |
           install -D Therion/pell-plan.pdf docs/surveys/pell-plan.pdf
+          install -D Therion/pell-plan.pdf docs/surveys/pell-elevation.pdf
           install -D Therion/pell.3d docs/surveys/pell.3d
 
       - name: Push changes
