@@ -18,14 +18,9 @@
 	const NoColorSpace = '';
 	const SRGBColorSpace = 'srgb';
 	const LinearSRGBColorSpace = 'srgb-linear';
-	const DisplayP3ColorSpace = 'display-p3';
-	const LinearDisplayP3ColorSpace = 'display-p3-linear';
 
 	const LinearTransfer = 'linear';
 	const SRGBTransfer = 'srgb';
-
-	const Rec709Primaries = 'rec709';
-	const P3Primaries = 'p3';
 	const KeepStencilOp = 7680;
 	const AlwaysStencilFunc = 519;
 
@@ -421,86 +416,31 @@
 
 	const _m3 = /*@__PURE__*/ new Matrix3();
 
-	/**
-	 * Matrices converting P3 <-> Rec. 709 primaries, without gamut mapping
-	 * or clipping. Based on W3C specifications for sRGB and Display P3,
-	 * and ICC specifications for the D50 connection space. Values in/out
-	 * are _linear_ sRGB and _linear_ Display P3.
-	 *
-	 * Note that both sRGB and Display P3 use the sRGB transfer functions.
-	 *
-	 * Reference:
-	 * - http://www.russellcottrell.com/photo/matrixCalculator.htm
-	 */
-
-	const LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 = /*@__PURE__*/ new Matrix3().set(
-		0.8224621, 0.177538, 0.0,
-		0.0331941, 0.9668058, 0.0,
-		0.0170827, 0.0723974, 0.9105199,
-	);
-
-	const LINEAR_DISPLAY_P3_TO_LINEAR_SRGB = /*@__PURE__*/ new Matrix3().set(
-		1.2249401, - 0.2249404, 0.0,
-		- 0.0420569, 1.0420571, 0.0,
-		- 0.0196376, - 0.0786361, 1.0982735
-	);
-
-	/**
-	 * Defines supported color spaces by transfer function and primaries,
-	 * and provides conversions to/from the Linear-sRGB reference space.
-	 */
-	const COLOR_SPACES = {
-		[ LinearSRGBColorSpace ]: {
-			transfer: LinearTransfer,
-			primaries: Rec709Primaries,
-			toReference: ( color ) => color,
-			fromReference: ( color ) => color,
-		},
-		[ SRGBColorSpace ]: {
-			transfer: SRGBTransfer,
-			primaries: Rec709Primaries,
-			toReference: ( color ) => color.convertSRGBToLinear(),
-			fromReference: ( color ) => color.convertLinearToSRGB(),
-		},
-		[ LinearDisplayP3ColorSpace ]: {
-			transfer: LinearTransfer,
-			primaries: P3Primaries,
-			toReference: ( color ) => color.applyMatrix3( LINEAR_DISPLAY_P3_TO_LINEAR_SRGB ),
-			fromReference: ( color ) => color.applyMatrix3( LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 ),
-		},
-		[ DisplayP3ColorSpace ]: {
-			transfer: SRGBTransfer,
-			primaries: P3Primaries,
-			toReference: ( color ) => color.convertSRGBToLinear().applyMatrix3( LINEAR_DISPLAY_P3_TO_LINEAR_SRGB ),
-			fromReference: ( color ) => color.applyMatrix3( LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 ).convertLinearToSRGB(),
-		},
-	};
-
-	const SUPPORTED_WORKING_COLOR_SPACES = new Set( [ LinearSRGBColorSpace, LinearDisplayP3ColorSpace ] );
-
 	const ColorManagement = {
 
 		enabled: true,
 
-		_workingColorSpace: LinearSRGBColorSpace,
+		workingColorSpace: LinearSRGBColorSpace,
 
-		get workingColorSpace() {
-
-			return this._workingColorSpace;
-
-		},
-
-		set workingColorSpace( colorSpace ) {
-
-			if ( ! SUPPORTED_WORKING_COLOR_SPACES.has( colorSpace ) ) {
-
-				throw new Error( `Unsupported working color space, "${ colorSpace }".` );
-
-			}
-
-			this._workingColorSpace = colorSpace;
-
-		},
+		/**
+		 * Implementations of supported color spaces.
+		 *
+		 * Required:
+		 *	- primaries: chromaticity coordinates [ rx ry gx gy bx by ]
+		 *	- whitePoint: reference white [ x y ]
+		 *	- transfer: transfer function (pre-defined)
+		 *	- toXYZ: Matrix3 RGB to XYZ transform
+		 *	- fromXYZ: Matrix3 XYZ to RGB transform
+		 *	- luminanceCoefficients: RGB luminance coefficients
+		 *
+		 * Optional:
+		 *  - outputColorSpaceConfig: { drawingBufferColorSpace: ColorSpace }
+		 *  - workingColorSpaceConfig: { unpackColorSpace: ColorSpace }
+		 *
+		 * Reference:
+		 * - https://www.russellcottrell.com/photo/matrixCalculator.htm
+		 */
+		spaces: {},
 
 		convert: function ( color, sourceColorSpace, targetColorSpace ) {
 
@@ -510,28 +450,48 @@
 
 			}
 
-			const sourceToReference = COLOR_SPACES[ sourceColorSpace ].toReference;
-			const targetFromReference = COLOR_SPACES[ targetColorSpace ].fromReference;
+			if ( this.spaces[ sourceColorSpace ].transfer === SRGBTransfer ) {
 
-			return targetFromReference( sourceToReference( color ) );
+				color.r = SRGBToLinear( color.r );
+				color.g = SRGBToLinear( color.g );
+				color.b = SRGBToLinear( color.b );
+
+			}
+
+			if ( this.spaces[ sourceColorSpace ].primaries !== this.spaces[ targetColorSpace ].primaries ) {
+
+				color.applyMatrix3( this.spaces[ sourceColorSpace ].toXYZ );
+				color.applyMatrix3( this.spaces[ targetColorSpace ].fromXYZ );
+
+			}
+
+			if ( this.spaces[ targetColorSpace ].transfer === SRGBTransfer ) {
+
+				color.r = LinearToSRGB( color.r );
+				color.g = LinearToSRGB( color.g );
+				color.b = LinearToSRGB( color.b );
+
+			}
+
+			return color;
 
 		},
 
 		fromWorkingColorSpace: function ( color, targetColorSpace ) {
 
-			return this.convert( color, this._workingColorSpace, targetColorSpace );
+			return this.convert( color, this.workingColorSpace, targetColorSpace );
 
 		},
 
 		toWorkingColorSpace: function ( color, sourceColorSpace ) {
 
-			return this.convert( color, sourceColorSpace, this._workingColorSpace );
+			return this.convert( color, sourceColorSpace, this.workingColorSpace );
 
 		},
 
 		getPrimaries: function ( colorSpace ) {
 
-			return COLOR_SPACES[ colorSpace ].primaries;
+			return this.spaces[ colorSpace ].primaries;
 
 		},
 
@@ -539,12 +499,45 @@
 
 			if ( colorSpace === NoColorSpace ) return LinearTransfer;
 
-			return COLOR_SPACES[ colorSpace ].transfer;
+			return this.spaces[ colorSpace ].transfer;
 
 		},
 
-	};
+		getLuminanceCoefficients: function ( target, colorSpace = this.workingColorSpace ) {
 
+			return target.fromArray( this.spaces[ colorSpace ].luminanceCoefficients );
+
+		},
+
+		define: function ( colorSpaces ) {
+
+			Object.assign( this.spaces, colorSpaces );
+
+		},
+
+		// Internal APIs
+
+		_getMatrix: function ( targetMatrix, sourceColorSpace, targetColorSpace ) {
+
+			return targetMatrix
+				.copy( this.spaces[ sourceColorSpace ].toXYZ )
+				.multiply( this.spaces[ targetColorSpace ].fromXYZ );
+
+		},
+
+		_getDrawingBufferColorSpace: function ( colorSpace ) {
+
+			return this.spaces[ colorSpace ].outputColorSpaceConfig.drawingBufferColorSpace;
+
+		},
+
+		_getUnpackColorSpace: function ( colorSpace = this.workingColorSpace ) {
+
+			return this.spaces[ colorSpace ].workingColorSpaceConfig.unpackColorSpace;
+
+		}
+
+	};
 
 	function SRGBToLinear( c ) {
 
@@ -557,6 +550,51 @@
 		return ( c < 0.0031308 ) ? c * 12.92 : 1.055 * ( Math.pow( c, 0.41666 ) ) - 0.055;
 
 	}
+
+	/******************************************************************************
+	 * sRGB definitions
+	 */
+
+	const REC709_PRIMARIES = [ 0.640, 0.330, 0.300, 0.600, 0.150, 0.060 ];
+	const REC709_LUMINANCE_COEFFICIENTS = [ 0.2126, 0.7152, 0.0722 ];
+	const D65 = [ 0.3127, 0.3290 ];
+
+	const LINEAR_REC709_TO_XYZ = /*@__PURE__*/ new Matrix3().set(
+		0.4123908, 0.3575843, 0.1804808,
+		0.2126390, 0.7151687, 0.0721923,
+		0.0193308, 0.1191948, 0.9505322
+	);
+
+	const XYZ_TO_LINEAR_REC709 = /*@__PURE__*/ new Matrix3().set(
+		3.2409699, - 1.5373832, - 0.4986108,
+		- 0.9692436, 1.8759675, 0.0415551,
+		0.0556301, - 0.2039770, 1.0569715
+	);
+
+	ColorManagement.define( {
+
+		[ LinearSRGBColorSpace ]: {
+			primaries: REC709_PRIMARIES,
+			whitePoint: D65,
+			transfer: LinearTransfer,
+			toXYZ: LINEAR_REC709_TO_XYZ,
+			fromXYZ: XYZ_TO_LINEAR_REC709,
+			luminanceCoefficients: REC709_LUMINANCE_COEFFICIENTS,
+			workingColorSpaceConfig: { unpackColorSpace: SRGBColorSpace },
+			outputColorSpaceConfig: { drawingBufferColorSpace: SRGBColorSpace }
+		},
+
+		[ SRGBColorSpace ]: {
+			primaries: REC709_PRIMARIES,
+			whitePoint: D65,
+			transfer: SRGBTransfer,
+			toXYZ: LINEAR_REC709_TO_XYZ,
+			fromXYZ: XYZ_TO_LINEAR_REC709,
+			luminanceCoefficients: REC709_LUMINANCE_COEFFICIENTS,
+			outputColorSpaceConfig: { drawingBufferColorSpace: SRGBColorSpace }
+		},
+
+	} );
 
 	/**
 	 * Uniform Utilities
@@ -2864,9 +2902,9 @@
 
 		containsPoint( point ) {
 
-			return point.x < this.min.x || point.x > this.max.x ||
-				point.y < this.min.y || point.y > this.max.y ||
-				point.z < this.min.z || point.z > this.max.z ? false : true;
+			return point.x >= this.min.x && point.x <= this.max.x &&
+				point.y >= this.min.y && point.y <= this.max.y &&
+				point.z >= this.min.z && point.z <= this.max.z;
 
 		}
 
@@ -2894,9 +2932,9 @@
 		intersectsBox( box ) {
 
 			// using 6 splitting planes to rule out intersections.
-			return box.max.x < this.min.x || box.min.x > this.max.x ||
-				box.max.y < this.min.y || box.min.y > this.max.y ||
-				box.max.z < this.min.z || box.min.z > this.max.z ? false : true;
+			return box.max.x >= this.min.x && box.min.x <= this.max.x &&
+				box.max.y >= this.min.y && box.min.y <= this.max.y &&
+				box.max.z >= this.min.z && box.min.z <= this.max.z;
 
 		}
 
@@ -5578,12 +5616,7 @@
 
 			if ( object && object.isObject3D ) {
 
-				if ( object.parent !== null ) {
-
-					object.parent.remove( object );
-
-				}
-
+				object.removeFromParent();
 				object.parent = this;
 				this.children.push( object );
 
@@ -5676,9 +5709,17 @@
 
 			object.applyMatrix4( _m1$1 );
 
-			this.add( object );
+			object.removeFromParent();
+			object.parent = this;
+			this.children.push( object );
 
 			object.updateWorldMatrix( false, true );
+
+			object.dispatchEvent( _addedEvent );
+
+			_childaddedEvent.child = object;
+			this.dispatchEvent( _childaddedEvent );
+			_childaddedEvent.child = null;
 
 			return this;
 
@@ -5831,6 +5872,54 @@
 
 			if ( this.matrixWorldNeedsUpdate || force ) {
 
+				if ( this.matrixWorldAutoUpdate === true ) {
+
+					if ( this.parent === null ) {
+
+						this.matrixWorld.copy( this.matrix );
+
+					} else {
+
+						this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+
+					}
+
+				}
+
+				this.matrixWorldNeedsUpdate = false;
+
+				force = true;
+
+			}
+
+			// make sure descendants are updated if required
+
+			const children = this.children;
+
+			for ( let i = 0, l = children.length; i < l; i ++ ) {
+
+				const child = children[ i ];
+
+				child.updateMatrixWorld( force );
+
+			}
+
+		}
+
+		updateWorldMatrix( updateParents, updateChildren ) {
+
+			const parent = this.parent;
+
+			if ( updateParents === true && parent !== null ) {
+
+				parent.updateWorldMatrix( true, false );
+
+			}
+
+			if ( this.matrixAutoUpdate ) this.updateMatrix();
+
+			if ( this.matrixWorldAutoUpdate === true ) {
+
 				if ( this.parent === null ) {
 
 					this.matrixWorld.copy( this.matrix );
@@ -5841,53 +5930,9 @@
 
 				}
 
-				this.matrixWorldNeedsUpdate = false;
-
-				force = true;
-
 			}
 
-			// update children
-
-			const children = this.children;
-
-			for ( let i = 0, l = children.length; i < l; i ++ ) {
-
-				const child = children[ i ];
-
-				if ( child.matrixWorldAutoUpdate === true || force === true ) {
-
-					child.updateMatrixWorld( force );
-
-				}
-
-			}
-
-		}
-
-		updateWorldMatrix( updateParents, updateChildren ) {
-
-			const parent = this.parent;
-
-			if ( updateParents === true && parent !== null && parent.matrixWorldAutoUpdate === true ) {
-
-				parent.updateWorldMatrix( true, false );
-
-			}
-
-			if ( this.matrixAutoUpdate ) this.updateMatrix();
-
-			if ( this.parent === null ) {
-
-				this.matrixWorld.copy( this.matrix );
-
-			} else {
-
-				this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
-
-			}
-
-			// update children
+			// make sure descendants are updated
 
 			if ( updateChildren === true ) {
 
@@ -5897,11 +5942,7 @@
 
 					const child = children[ i ];
 
-					if ( child.matrixWorldAutoUpdate === true ) {
-
-						child.updateWorldMatrix( false, true );
-
-					}
+					child.updateWorldMatrix( false, true );
 
 				}
 
@@ -5994,7 +6035,7 @@
 					sphereCenter: bound.sphere.center.toArray()
 				} ) );
 
-				object.maxGeometryCount = this._maxGeometryCount;
+				object.maxInstanceCount = this._maxInstanceCount;
 				object.maxVertexCount = this._maxVertexCount;
 				object.maxIndexCount = this._maxIndexCount;
 
@@ -6002,6 +6043,8 @@
 				object.geometryCount = this._geometryCount;
 
 				object.matricesTexture = this._matricesTexture.toJSON( meta );
+
+				if ( this._colorsTexture !== null ) object.colorsTexture = this._colorsTexture.toJSON( meta );
 
 				if ( this.boundingSphere !== null ) {
 
@@ -6261,6 +6304,673 @@
 	Object3D.DEFAULT_MATRIX_AUTO_UPDATE = true;
 	Object3D.DEFAULT_MATRIX_WORLD_AUTO_UPDATE = true;
 
+	class Vector4 {
+
+		constructor( x = 0, y = 0, z = 0, w = 1 ) {
+
+			Vector4.prototype.isVector4 = true;
+
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.w = w;
+
+		}
+
+		get width() {
+
+			return this.z;
+
+		}
+
+		set width( value ) {
+
+			this.z = value;
+
+		}
+
+		get height() {
+
+			return this.w;
+
+		}
+
+		set height( value ) {
+
+			this.w = value;
+
+		}
+
+		set( x, y, z, w ) {
+
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.w = w;
+
+			return this;
+
+		}
+
+		setScalar( scalar ) {
+
+			this.x = scalar;
+			this.y = scalar;
+			this.z = scalar;
+			this.w = scalar;
+
+			return this;
+
+		}
+
+		setX( x ) {
+
+			this.x = x;
+
+			return this;
+
+		}
+
+		setY( y ) {
+
+			this.y = y;
+
+			return this;
+
+		}
+
+		setZ( z ) {
+
+			this.z = z;
+
+			return this;
+
+		}
+
+		setW( w ) {
+
+			this.w = w;
+
+			return this;
+
+		}
+
+		setComponent( index, value ) {
+
+			switch ( index ) {
+
+				case 0: this.x = value; break;
+				case 1: this.y = value; break;
+				case 2: this.z = value; break;
+				case 3: this.w = value; break;
+				default: throw new Error( 'index is out of range: ' + index );
+
+			}
+
+			return this;
+
+		}
+
+		getComponent( index ) {
+
+			switch ( index ) {
+
+				case 0: return this.x;
+				case 1: return this.y;
+				case 2: return this.z;
+				case 3: return this.w;
+				default: throw new Error( 'index is out of range: ' + index );
+
+			}
+
+		}
+
+		clone() {
+
+			return new this.constructor( this.x, this.y, this.z, this.w );
+
+		}
+
+		copy( v ) {
+
+			this.x = v.x;
+			this.y = v.y;
+			this.z = v.z;
+			this.w = ( v.w !== undefined ) ? v.w : 1;
+
+			return this;
+
+		}
+
+		add( v ) {
+
+			this.x += v.x;
+			this.y += v.y;
+			this.z += v.z;
+			this.w += v.w;
+
+			return this;
+
+		}
+
+		addScalar( s ) {
+
+			this.x += s;
+			this.y += s;
+			this.z += s;
+			this.w += s;
+
+			return this;
+
+		}
+
+		addVectors( a, b ) {
+
+			this.x = a.x + b.x;
+			this.y = a.y + b.y;
+			this.z = a.z + b.z;
+			this.w = a.w + b.w;
+
+			return this;
+
+		}
+
+		addScaledVector( v, s ) {
+
+			this.x += v.x * s;
+			this.y += v.y * s;
+			this.z += v.z * s;
+			this.w += v.w * s;
+
+			return this;
+
+		}
+
+		sub( v ) {
+
+			this.x -= v.x;
+			this.y -= v.y;
+			this.z -= v.z;
+			this.w -= v.w;
+
+			return this;
+
+		}
+
+		subScalar( s ) {
+
+			this.x -= s;
+			this.y -= s;
+			this.z -= s;
+			this.w -= s;
+
+			return this;
+
+		}
+
+		subVectors( a, b ) {
+
+			this.x = a.x - b.x;
+			this.y = a.y - b.y;
+			this.z = a.z - b.z;
+			this.w = a.w - b.w;
+
+			return this;
+
+		}
+
+		multiply( v ) {
+
+			this.x *= v.x;
+			this.y *= v.y;
+			this.z *= v.z;
+			this.w *= v.w;
+
+			return this;
+
+		}
+
+		multiplyScalar( scalar ) {
+
+			this.x *= scalar;
+			this.y *= scalar;
+			this.z *= scalar;
+			this.w *= scalar;
+
+			return this;
+
+		}
+
+		applyMatrix4( m ) {
+
+			const x = this.x, y = this.y, z = this.z, w = this.w;
+			const e = m.elements;
+
+			this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z + e[ 12 ] * w;
+			this.y = e[ 1 ] * x + e[ 5 ] * y + e[ 9 ] * z + e[ 13 ] * w;
+			this.z = e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z + e[ 14 ] * w;
+			this.w = e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] * w;
+
+			return this;
+
+		}
+
+		divide( v ) {
+
+			this.x /= v.x;
+			this.y /= v.y;
+			this.z /= v.z;
+			this.w /= v.w;
+
+			return this;
+
+		}
+
+		divideScalar( scalar ) {
+
+			return this.multiplyScalar( 1 / scalar );
+
+		}
+
+		setAxisAngleFromQuaternion( q ) {
+
+			// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
+
+			// q is assumed to be normalized
+
+			this.w = 2 * Math.acos( q.w );
+
+			const s = Math.sqrt( 1 - q.w * q.w );
+
+			if ( s < 0.0001 ) {
+
+				this.x = 1;
+				this.y = 0;
+				this.z = 0;
+
+			} else {
+
+				this.x = q.x / s;
+				this.y = q.y / s;
+				this.z = q.z / s;
+
+			}
+
+			return this;
+
+		}
+
+		setAxisAngleFromRotationMatrix( m ) {
+
+			// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+
+			// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+
+			let angle, x, y, z; // variables for result
+			const epsilon = 0.01,		// margin to allow for rounding errors
+				epsilon2 = 0.1,		// margin to distinguish between 0 and 180 degrees
+
+				te = m.elements,
+
+				m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
+				m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
+				m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
+
+			if ( ( Math.abs( m12 - m21 ) < epsilon ) &&
+			     ( Math.abs( m13 - m31 ) < epsilon ) &&
+			     ( Math.abs( m23 - m32 ) < epsilon ) ) {
+
+				// singularity found
+				// first check for identity matrix which must have +1 for all terms
+				// in leading diagonal and zero in other terms
+
+				if ( ( Math.abs( m12 + m21 ) < epsilon2 ) &&
+				     ( Math.abs( m13 + m31 ) < epsilon2 ) &&
+				     ( Math.abs( m23 + m32 ) < epsilon2 ) &&
+				     ( Math.abs( m11 + m22 + m33 - 3 ) < epsilon2 ) ) {
+
+					// this singularity is identity matrix so angle = 0
+
+					this.set( 1, 0, 0, 0 );
+
+					return this; // zero angle, arbitrary axis
+
+				}
+
+				// otherwise this singularity is angle = 180
+
+				angle = Math.PI;
+
+				const xx = ( m11 + 1 ) / 2;
+				const yy = ( m22 + 1 ) / 2;
+				const zz = ( m33 + 1 ) / 2;
+				const xy = ( m12 + m21 ) / 4;
+				const xz = ( m13 + m31 ) / 4;
+				const yz = ( m23 + m32 ) / 4;
+
+				if ( ( xx > yy ) && ( xx > zz ) ) {
+
+					// m11 is the largest diagonal term
+
+					if ( xx < epsilon ) {
+
+						x = 0;
+						y = 0.707106781;
+						z = 0.707106781;
+
+					} else {
+
+						x = Math.sqrt( xx );
+						y = xy / x;
+						z = xz / x;
+
+					}
+
+				} else if ( yy > zz ) {
+
+					// m22 is the largest diagonal term
+
+					if ( yy < epsilon ) {
+
+						x = 0.707106781;
+						y = 0;
+						z = 0.707106781;
+
+					} else {
+
+						y = Math.sqrt( yy );
+						x = xy / y;
+						z = yz / y;
+
+					}
+
+				} else {
+
+					// m33 is the largest diagonal term so base result on this
+
+					if ( zz < epsilon ) {
+
+						x = 0.707106781;
+						y = 0.707106781;
+						z = 0;
+
+					} else {
+
+						z = Math.sqrt( zz );
+						x = xz / z;
+						y = yz / z;
+
+					}
+
+				}
+
+				this.set( x, y, z, angle );
+
+				return this; // return 180 deg rotation
+
+			}
+
+			// as we have reached here there are no singularities so we can handle normally
+
+			let s = Math.sqrt( ( m32 - m23 ) * ( m32 - m23 ) +
+				( m13 - m31 ) * ( m13 - m31 ) +
+				( m21 - m12 ) * ( m21 - m12 ) ); // used to normalize
+
+			if ( Math.abs( s ) < 0.001 ) s = 1;
+
+			// prevent divide by zero, should not happen if matrix is orthogonal and should be
+			// caught by singularity test above, but I've left it in just in case
+
+			this.x = ( m32 - m23 ) / s;
+			this.y = ( m13 - m31 ) / s;
+			this.z = ( m21 - m12 ) / s;
+			this.w = Math.acos( ( m11 + m22 + m33 - 1 ) / 2 );
+
+			return this;
+
+		}
+
+		setFromMatrixPosition( m ) {
+
+			const e = m.elements;
+
+			this.x = e[ 12 ];
+			this.y = e[ 13 ];
+			this.z = e[ 14 ];
+			this.w = e[ 15 ];
+
+			return this;
+
+		}
+
+		min( v ) {
+
+			this.x = Math.min( this.x, v.x );
+			this.y = Math.min( this.y, v.y );
+			this.z = Math.min( this.z, v.z );
+			this.w = Math.min( this.w, v.w );
+
+			return this;
+
+		}
+
+		max( v ) {
+
+			this.x = Math.max( this.x, v.x );
+			this.y = Math.max( this.y, v.y );
+			this.z = Math.max( this.z, v.z );
+			this.w = Math.max( this.w, v.w );
+
+			return this;
+
+		}
+
+		clamp( min, max ) {
+
+			// assumes min < max, componentwise
+
+			this.x = Math.max( min.x, Math.min( max.x, this.x ) );
+			this.y = Math.max( min.y, Math.min( max.y, this.y ) );
+			this.z = Math.max( min.z, Math.min( max.z, this.z ) );
+			this.w = Math.max( min.w, Math.min( max.w, this.w ) );
+
+			return this;
+
+		}
+
+		clampScalar( minVal, maxVal ) {
+
+			this.x = Math.max( minVal, Math.min( maxVal, this.x ) );
+			this.y = Math.max( minVal, Math.min( maxVal, this.y ) );
+			this.z = Math.max( minVal, Math.min( maxVal, this.z ) );
+			this.w = Math.max( minVal, Math.min( maxVal, this.w ) );
+
+			return this;
+
+		}
+
+		clampLength( min, max ) {
+
+			const length = this.length();
+
+			return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
+
+		}
+
+		floor() {
+
+			this.x = Math.floor( this.x );
+			this.y = Math.floor( this.y );
+			this.z = Math.floor( this.z );
+			this.w = Math.floor( this.w );
+
+			return this;
+
+		}
+
+		ceil() {
+
+			this.x = Math.ceil( this.x );
+			this.y = Math.ceil( this.y );
+			this.z = Math.ceil( this.z );
+			this.w = Math.ceil( this.w );
+
+			return this;
+
+		}
+
+		round() {
+
+			this.x = Math.round( this.x );
+			this.y = Math.round( this.y );
+			this.z = Math.round( this.z );
+			this.w = Math.round( this.w );
+
+			return this;
+
+		}
+
+		roundToZero() {
+
+			this.x = Math.trunc( this.x );
+			this.y = Math.trunc( this.y );
+			this.z = Math.trunc( this.z );
+			this.w = Math.trunc( this.w );
+
+			return this;
+
+		}
+
+		negate() {
+
+			this.x = - this.x;
+			this.y = - this.y;
+			this.z = - this.z;
+			this.w = - this.w;
+
+			return this;
+
+		}
+
+		dot( v ) {
+
+			return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
+
+		}
+
+		lengthSq() {
+
+			return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+
+		}
+
+		length() {
+
+			return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w );
+
+		}
+
+		manhattanLength() {
+
+			return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w );
+
+		}
+
+		normalize() {
+
+			return this.divideScalar( this.length() || 1 );
+
+		}
+
+		setLength( length ) {
+
+			return this.normalize().multiplyScalar( length );
+
+		}
+
+		lerp( v, alpha ) {
+
+			this.x += ( v.x - this.x ) * alpha;
+			this.y += ( v.y - this.y ) * alpha;
+			this.z += ( v.z - this.z ) * alpha;
+			this.w += ( v.w - this.w ) * alpha;
+
+			return this;
+
+		}
+
+		lerpVectors( v1, v2, alpha ) {
+
+			this.x = v1.x + ( v2.x - v1.x ) * alpha;
+			this.y = v1.y + ( v2.y - v1.y ) * alpha;
+			this.z = v1.z + ( v2.z - v1.z ) * alpha;
+			this.w = v1.w + ( v2.w - v1.w ) * alpha;
+
+			return this;
+
+		}
+
+		equals( v ) {
+
+			return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) && ( v.w === this.w ) );
+
+		}
+
+		fromArray( array, offset = 0 ) {
+
+			this.x = array[ offset ];
+			this.y = array[ offset + 1 ];
+			this.z = array[ offset + 2 ];
+			this.w = array[ offset + 3 ];
+
+			return this;
+
+		}
+
+		toArray( array = [], offset = 0 ) {
+
+			array[ offset ] = this.x;
+			array[ offset + 1 ] = this.y;
+			array[ offset + 2 ] = this.z;
+			array[ offset + 3 ] = this.w;
+
+			return array;
+
+		}
+
+		fromBufferAttribute( attribute, index ) {
+
+			this.x = attribute.getX( index );
+			this.y = attribute.getY( index );
+			this.z = attribute.getZ( index );
+			this.w = attribute.getW( index );
+
+			return this;
+
+		}
+
+		random() {
+
+			this.x = Math.random();
+			this.y = Math.random();
+			this.z = Math.random();
+			this.w = Math.random();
+
+			return this;
+
+		}
+
+		*[ Symbol.iterator ]() {
+
+			yield this.x;
+			yield this.y;
+			yield this.z;
+			yield this.w;
+
+		}
+
+	}
+
 	const _v0 = /*@__PURE__*/ new Vector3();
 	const _v1 = /*@__PURE__*/ new Vector3();
 	const _v2 = /*@__PURE__*/ new Vector3();
@@ -6272,6 +6982,10 @@
 	const _vap = /*@__PURE__*/ new Vector3();
 	const _vbp = /*@__PURE__*/ new Vector3();
 	const _vcp = /*@__PURE__*/ new Vector3();
+
+	const _v40 = /*@__PURE__*/ new Vector4();
+	const _v41 = /*@__PURE__*/ new Vector4();
+	const _v42 = /*@__PURE__*/ new Vector4();
 
 	class Triangle {
 
@@ -6362,6 +7076,25 @@
 			target.addScaledVector( v1, _v3$1.x );
 			target.addScaledVector( v2, _v3$1.y );
 			target.addScaledVector( v3, _v3$1.z );
+
+			return target;
+
+		}
+
+		static getInterpolatedAttribute( attr, i1, i2, i3, barycoord, target ) {
+
+			_v40.setScalar( 0 );
+			_v41.setScalar( 0 );
+			_v42.setScalar( 0 );
+
+			_v40.fromBufferAttribute( attr, i1 );
+			_v41.fromBufferAttribute( attr, i2 );
+			_v42.fromBufferAttribute( attr, i3 );
+
+			target.setScalar( 0 );
+			target.addScaledVector( _v40, barycoord.x );
+			target.addScaledVector( _v41, barycoord.y );
+			target.addScaledVector( _v42, barycoord.z );
 
 			return target;
 
@@ -7191,6 +7924,20 @@
 
 	class Material extends EventDispatcher {
 
+		static get type() {
+
+			return 'Material';
+
+		}
+
+		get type() {
+
+			return this.constructor.type;
+
+		}
+
+		set type( _value ) { /* */ }
+
 		constructor() {
 
 			super();
@@ -7202,7 +7949,6 @@
 			this.uuid = generateUUID();
 
 			this.name = '';
-			this.type = 'Material';
 
 			this.blending = NormalBlending;
 			this.side = FrontSide;
@@ -7284,7 +8030,7 @@
 
 		}
 
-		onBuild( /* shaderobject, renderer */ ) {}
+		// onBeforeRender and onBeforeCompile only supported in WebGLRenderer
 
 		onBeforeRender( /* renderer, scene, camera, geometry, object, group */ ) {}
 
@@ -7401,6 +8147,8 @@
 				data.clearcoatNormalScale = this.clearcoatNormalScale.toArray();
 
 			}
+
+			if ( this.dispersion !== undefined ) data.dispersion = this.dispersion;
 
 			if ( this.iridescence !== undefined ) data.iridescence = this.iridescence;
 			if ( this.iridescenceIOR !== undefined ) data.iridescenceIOR = this.iridescenceIOR;
@@ -7702,17 +8450,27 @@
 
 		}
 
+		onBuild( /* shaderobject, renderer */ ) {
+
+			console.warn( 'Material: onBuild() has been removed.' ); // @deprecated, r166
+
+		}
+
 	}
 
 	class MeshBasicMaterial extends Material {
+
+		static get type() {
+
+			return 'MeshBasicMaterial';
+
+		}
 
 		constructor( parameters ) {
 
 			super();
 
 			this.isMeshBasicMaterial = true;
-
-			this.type = 'MeshBasicMaterial';
 
 			this.color = new Color( 0xffffff ); // emissive
 
@@ -7782,32 +8540,6 @@
 
 	}
 
-	function arrayNeedsUint32( array ) {
-
-		// assumes larger values usually on last
-
-		for ( let i = array.length - 1; i >= 0; -- i ) {
-
-			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
-
-		}
-
-		return false;
-
-	}
-
-	const _cache = {};
-
-	function warnOnce( message ) {
-
-		if ( message in _cache ) return;
-
-		_cache[ message ] = true;
-
-		console.warn( message );
-
-	}
-
 	const _vector$1 = /*@__PURE__*/ new Vector3();
 	const _vector2 = /*@__PURE__*/ new Vector2();
 
@@ -7831,7 +8563,6 @@
 			this.normalized = normalized;
 
 			this.usage = StaticDrawUsage;
-			this._updateRange = { offset: 0, count: - 1 };
 			this.updateRanges = [];
 			this.gpuType = FloatType;
 
@@ -7844,13 +8575,6 @@
 		set needsUpdate( value ) {
 
 			if ( value === true ) this.version ++;
-
-		}
-
-		get updateRange() {
-
-			warnOnce( 'THREE.BufferAttribute: updateRange() is deprecated and will be removed in r169. Use addUpdateRange() instead.' ); // @deprecated, r159
-			return this._updateRange;
 
 		}
 
@@ -8222,6 +8946,20 @@
 
 	}
 
+	function arrayNeedsUint32( array ) {
+
+		// assumes larger values usually on last
+
+		for ( let i = array.length - 1; i >= 0; -- i ) {
+
+			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
+
+		}
+
+		return false;
+
+	}
+
 	let _id = 0;
 
 	const _m1 = /*@__PURE__*/ new Matrix4();
@@ -8247,6 +8985,7 @@
 			this.type = 'BufferGeometry';
 
 			this.index = null;
+			this.indirect = null;
 			this.attributes = {};
 
 			this.morphAttributes = {};
@@ -8282,6 +9021,20 @@
 			}
 
 			return this;
+
+		}
+
+		setIndirect( indirect ) {
+
+			this.indirect = indirect;
+
+			return this;
+
+		}
+
+		getIndirect() {
+
+			return this.indirect;
 
 		}
 
@@ -8484,16 +9237,39 @@
 
 		setFromPoints( points ) {
 
-			const position = [];
+			const positionAttribute = this.getAttribute( 'position' );
 
-			for ( let i = 0, l = points.length; i < l; i ++ ) {
+			if ( positionAttribute === undefined ) {
 
-				const point = points[ i ];
-				position.push( point.x, point.y, point.z || 0 );
+				const position = [];
+
+				for ( let i = 0, l = points.length; i < l; i ++ ) {
+
+					const point = points[ i ];
+					position.push( point.x, point.y, point.z || 0 );
+
+				}
+
+				this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
+
+			} else {
+
+				for ( let i = 0, l = positionAttribute.count; i < l; i ++ ) {
+
+					const point = points[ i ];
+					positionAttribute.setXYZ( i, point.x, point.y, point.z || 0 );
+
+				}
+
+				if ( points.length > positionAttribute.count ) {
+
+					console.warn( 'THREE.BufferGeometry: Buffer size too small for points data. Use .dispose() and create a new geometry.' );
+
+				}
+
+				positionAttribute.needsUpdate = true;
 
 			}
-
-			this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
 
 			return this;
 
@@ -9294,14 +10070,6 @@
 	const _tempA = /*@__PURE__*/ new Vector3();
 	const _morphA = /*@__PURE__*/ new Vector3();
 
-	const _uvA = /*@__PURE__*/ new Vector2();
-	const _uvB = /*@__PURE__*/ new Vector2();
-	const _uvC = /*@__PURE__*/ new Vector2();
-
-	const _normalA = /*@__PURE__*/ new Vector3();
-	const _normalB = /*@__PURE__*/ new Vector3();
-	const _normalC = /*@__PURE__*/ new Vector3();
-
 	const _intersectionPoint = /*@__PURE__*/ new Vector3();
 	const _intersectionPointWorld = /*@__PURE__*/ new Vector3();
 
@@ -9644,33 +10412,24 @@
 
 		if ( intersection ) {
 
+			const barycoord = new Vector3();
+			Triangle.getBarycoord( _intersectionPoint, _vA, _vB, _vC, barycoord );
+
 			if ( uv ) {
 
-				_uvA.fromBufferAttribute( uv, a );
-				_uvB.fromBufferAttribute( uv, b );
-				_uvC.fromBufferAttribute( uv, c );
-
-				intersection.uv = Triangle.getInterpolation( _intersectionPoint, _vA, _vB, _vC, _uvA, _uvB, _uvC, new Vector2() );
+				intersection.uv = Triangle.getInterpolatedAttribute( uv, a, b, c, barycoord, new Vector2() );
 
 			}
 
 			if ( uv1 ) {
 
-				_uvA.fromBufferAttribute( uv1, a );
-				_uvB.fromBufferAttribute( uv1, b );
-				_uvC.fromBufferAttribute( uv1, c );
-
-				intersection.uv1 = Triangle.getInterpolation( _intersectionPoint, _vA, _vB, _vC, _uvA, _uvB, _uvC, new Vector2() );
+				intersection.uv1 = Triangle.getInterpolatedAttribute( uv1, a, b, c, barycoord, new Vector2() );
 
 			}
 
 			if ( normal ) {
 
-				_normalA.fromBufferAttribute( normal, a );
-				_normalB.fromBufferAttribute( normal, b );
-				_normalC.fromBufferAttribute( normal, c );
-
-				intersection.normal = Triangle.getInterpolation( _intersectionPoint, _vA, _vB, _vC, _normalA, _normalB, _normalC, new Vector3() );
+				intersection.normal = Triangle.getInterpolatedAttribute( normal, a, b, c, barycoord, new Vector3() );
 
 				if ( intersection.normal.dot( ray.direction ) > 0 ) {
 
@@ -9691,6 +10450,7 @@
 			Triangle.getNormal( _vA, _vB, _vC, face.normal );
 
 			intersection.face = face;
+			intersection.barycoord = barycoord;
 
 		}
 
@@ -9704,13 +10464,17 @@
 
 	class ShaderMaterial extends Material {
 
+		static get type() {
+
+			return 'ShaderMaterial';
+
+		}
+
 		constructor( parameters ) {
 
 			super();
 
 			this.isShaderMaterial = true;
-
-			this.type = 'ShaderMaterial';
 
 			this.defines = {};
 			this.uniforms = {};
@@ -9731,10 +10495,6 @@
 			this.forceSinglePass = true;
 
 			this.extensions = {
-				derivatives: false, // set to use derivatives
-				fragDepth: false, // set to use fragment depth values
-				drawBuffers: false, // set to use draw buffers
-				shaderTextureLOD: false, // set to use shader texture LOD
 				clipCullDistance: false, // set to use vertex shader clipping
 				multiDraw: false // set to use vertex shader multi_draw / enable gl_DrawID
 			};

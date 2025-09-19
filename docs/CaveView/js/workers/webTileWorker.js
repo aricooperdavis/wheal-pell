@@ -2226,9 +2226,9 @@
 
 		containsPoint( point ) {
 
-			return point.x < this.min.x || point.x > this.max.x ||
-				point.y < this.min.y || point.y > this.max.y ||
-				point.z < this.min.z || point.z > this.max.z ? false : true;
+			return point.x >= this.min.x && point.x <= this.max.x &&
+				point.y >= this.min.y && point.y <= this.max.y &&
+				point.z >= this.min.z && point.z <= this.max.z;
 
 		}
 
@@ -2256,9 +2256,9 @@
 		intersectsBox( box ) {
 
 			// using 6 splitting planes to rule out intersections.
-			return box.max.x < this.min.x || box.min.x > this.max.x ||
-				box.max.y < this.min.y || box.min.y > this.max.y ||
-				box.max.z < this.min.z || box.min.z > this.max.z ? false : true;
+			return box.max.x >= this.min.x && box.min.x <= this.max.x &&
+				box.max.y >= this.min.y && box.min.y <= this.max.y &&
+				box.max.z >= this.min.z && box.min.z <= this.max.z;
 
 		}
 
@@ -2611,32 +2611,6 @@
 	const WebGLCoordinateSystem = 2000;
 	const WebGPUCoordinateSystem = 2001;
 
-	function arrayNeedsUint32( array ) {
-
-		// assumes larger values usually on last
-
-		for ( let i = array.length - 1; i >= 0; -- i ) {
-
-			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
-
-		}
-
-		return false;
-
-	}
-
-	const _cache = {};
-
-	function warnOnce( message ) {
-
-		if ( message in _cache ) return;
-
-		_cache[ message ] = true;
-
-		console.warn( message );
-
-	}
-
 	const _vector$1 = /*@__PURE__*/ new Vector3();
 	const _vector2 = /*@__PURE__*/ new Vector2();
 
@@ -2660,7 +2634,6 @@
 			this.normalized = normalized;
 
 			this.usage = StaticDrawUsage;
-			this._updateRange = { offset: 0, count: - 1 };
 			this.updateRanges = [];
 			this.gpuType = FloatType;
 
@@ -2673,13 +2646,6 @@
 		set needsUpdate( value ) {
 
 			if ( value === true ) this.version ++;
-
-		}
-
-		get updateRange() {
-
-			warnOnce( 'THREE.BufferAttribute: updateRange() is deprecated and will be removed in r169. Use addUpdateRange() instead.' ); // @deprecated, r159
-			return this._updateRange;
 
 		}
 
@@ -5284,12 +5250,7 @@
 
 			if ( object && object.isObject3D ) {
 
-				if ( object.parent !== null ) {
-
-					object.parent.remove( object );
-
-				}
-
+				object.removeFromParent();
 				object.parent = this;
 				this.children.push( object );
 
@@ -5382,9 +5343,17 @@
 
 			object.applyMatrix4( _m1$1 );
 
-			this.add( object );
+			object.removeFromParent();
+			object.parent = this;
+			this.children.push( object );
 
 			object.updateWorldMatrix( false, true );
+
+			object.dispatchEvent( _addedEvent );
+
+			_childaddedEvent.child = object;
+			this.dispatchEvent( _childaddedEvent );
+			_childaddedEvent.child = null;
 
 			return this;
 
@@ -5537,6 +5506,54 @@
 
 			if ( this.matrixWorldNeedsUpdate || force ) {
 
+				if ( this.matrixWorldAutoUpdate === true ) {
+
+					if ( this.parent === null ) {
+
+						this.matrixWorld.copy( this.matrix );
+
+					} else {
+
+						this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+
+					}
+
+				}
+
+				this.matrixWorldNeedsUpdate = false;
+
+				force = true;
+
+			}
+
+			// make sure descendants are updated if required
+
+			const children = this.children;
+
+			for ( let i = 0, l = children.length; i < l; i ++ ) {
+
+				const child = children[ i ];
+
+				child.updateMatrixWorld( force );
+
+			}
+
+		}
+
+		updateWorldMatrix( updateParents, updateChildren ) {
+
+			const parent = this.parent;
+
+			if ( updateParents === true && parent !== null ) {
+
+				parent.updateWorldMatrix( true, false );
+
+			}
+
+			if ( this.matrixAutoUpdate ) this.updateMatrix();
+
+			if ( this.matrixWorldAutoUpdate === true ) {
+
 				if ( this.parent === null ) {
 
 					this.matrixWorld.copy( this.matrix );
@@ -5547,53 +5564,9 @@
 
 				}
 
-				this.matrixWorldNeedsUpdate = false;
-
-				force = true;
-
 			}
 
-			// update children
-
-			const children = this.children;
-
-			for ( let i = 0, l = children.length; i < l; i ++ ) {
-
-				const child = children[ i ];
-
-				if ( child.matrixWorldAutoUpdate === true || force === true ) {
-
-					child.updateMatrixWorld( force );
-
-				}
-
-			}
-
-		}
-
-		updateWorldMatrix( updateParents, updateChildren ) {
-
-			const parent = this.parent;
-
-			if ( updateParents === true && parent !== null && parent.matrixWorldAutoUpdate === true ) {
-
-				parent.updateWorldMatrix( true, false );
-
-			}
-
-			if ( this.matrixAutoUpdate ) this.updateMatrix();
-
-			if ( this.parent === null ) {
-
-				this.matrixWorld.copy( this.matrix );
-
-			} else {
-
-				this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
-
-			}
-
-			// update children
+			// make sure descendants are updated
 
 			if ( updateChildren === true ) {
 
@@ -5603,11 +5576,7 @@
 
 					const child = children[ i ];
 
-					if ( child.matrixWorldAutoUpdate === true ) {
-
-						child.updateWorldMatrix( false, true );
-
-					}
+					child.updateWorldMatrix( false, true );
 
 				}
 
@@ -5700,7 +5669,7 @@
 					sphereCenter: bound.sphere.center.toArray()
 				} ) );
 
-				object.maxGeometryCount = this._maxGeometryCount;
+				object.maxInstanceCount = this._maxInstanceCount;
 				object.maxVertexCount = this._maxVertexCount;
 				object.maxIndexCount = this._maxIndexCount;
 
@@ -5708,6 +5677,8 @@
 				object.geometryCount = this._geometryCount;
 
 				object.matricesTexture = this._matricesTexture.toJSON( meta );
+
+				if ( this._colorsTexture !== null ) object.colorsTexture = this._colorsTexture.toJSON( meta );
 
 				if ( this.boundingSphere !== null ) {
 
@@ -5967,6 +5938,20 @@
 	Object3D.DEFAULT_MATRIX_AUTO_UPDATE = true;
 	Object3D.DEFAULT_MATRIX_WORLD_AUTO_UPDATE = true;
 
+	function arrayNeedsUint32( array ) {
+
+		// assumes larger values usually on last
+
+		for ( let i = array.length - 1; i >= 0; -- i ) {
+
+			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
+
+		}
+
+		return false;
+
+	}
+
 	let _id = 0;
 
 	const _m1 = /*@__PURE__*/ new Matrix4();
@@ -5992,6 +5977,7 @@
 			this.type = 'BufferGeometry';
 
 			this.index = null;
+			this.indirect = null;
 			this.attributes = {};
 
 			this.morphAttributes = {};
@@ -6027,6 +6013,20 @@
 			}
 
 			return this;
+
+		}
+
+		setIndirect( indirect ) {
+
+			this.indirect = indirect;
+
+			return this;
+
+		}
+
+		getIndirect() {
+
+			return this.indirect;
 
 		}
 
@@ -6229,16 +6229,39 @@
 
 		setFromPoints( points ) {
 
-			const position = [];
+			const positionAttribute = this.getAttribute( 'position' );
 
-			for ( let i = 0, l = points.length; i < l; i ++ ) {
+			if ( positionAttribute === undefined ) {
 
-				const point = points[ i ];
-				position.push( point.x, point.y, point.z || 0 );
+				const position = [];
+
+				for ( let i = 0, l = points.length; i < l; i ++ ) {
+
+					const point = points[ i ];
+					position.push( point.x, point.y, point.z || 0 );
+
+				}
+
+				this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
+
+			} else {
+
+				for ( let i = 0, l = positionAttribute.count; i < l; i ++ ) {
+
+					const point = points[ i ];
+					positionAttribute.setXYZ( i, point.x, point.y, point.z || 0 );
+
+				}
+
+				if ( points.length > positionAttribute.count ) {
+
+					console.warn( 'THREE.BufferGeometry: Buffer size too small for points data. Use .dispose() and create a new geometry.' );
+
+				}
+
+				positionAttribute.needsUpdate = true;
 
 			}
-
-			this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
 
 			return this;
 

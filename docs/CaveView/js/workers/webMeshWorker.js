@@ -704,8 +704,8 @@
 
 		containsPoint( point ) {
 
-			return point.x < this.min.x || point.x > this.max.x ||
-				point.y < this.min.y || point.y > this.max.y ? false : true;
+			return point.x >= this.min.x && point.x <= this.max.x &&
+				point.y >= this.min.y && point.y <= this.max.y;
 
 		}
 
@@ -732,8 +732,8 @@
 
 			// using 4 splitting planes to rule out intersections
 
-			return box.max.x < this.min.x || box.min.x > this.max.x ||
-				box.max.y < this.min.y || box.min.y > this.max.y ? false : true;
+			return box.max.x >= this.min.x && box.min.x <= this.max.x &&
+				box.max.y >= this.min.y && box.min.y <= this.max.y;
 
 		}
 
@@ -2427,9 +2427,9 @@
 
 		containsPoint( point ) {
 
-			return point.x < this.min.x || point.x > this.max.x ||
-				point.y < this.min.y || point.y > this.max.y ||
-				point.z < this.min.z || point.z > this.max.z ? false : true;
+			return point.x >= this.min.x && point.x <= this.max.x &&
+				point.y >= this.min.y && point.y <= this.max.y &&
+				point.z >= this.min.z && point.z <= this.max.z;
 
 		}
 
@@ -2457,9 +2457,9 @@
 		intersectsBox( box ) {
 
 			// using 6 splitting planes to rule out intersections.
-			return box.max.x < this.min.x || box.min.x > this.max.x ||
-				box.max.y < this.min.y || box.min.y > this.max.y ||
-				box.max.z < this.min.z || box.min.z > this.max.z ? false : true;
+			return box.max.x >= this.min.x && box.min.x <= this.max.x &&
+				box.max.y >= this.min.y && box.min.y <= this.max.y &&
+				box.max.z >= this.min.z && box.min.z <= this.max.z;
 
 		}
 
@@ -2812,32 +2812,6 @@
 	const WebGLCoordinateSystem = 2000;
 	const WebGPUCoordinateSystem = 2001;
 
-	function arrayNeedsUint32( array ) {
-
-		// assumes larger values usually on last
-
-		for ( let i = array.length - 1; i >= 0; -- i ) {
-
-			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
-
-		}
-
-		return false;
-
-	}
-
-	const _cache = {};
-
-	function warnOnce( message ) {
-
-		if ( message in _cache ) return;
-
-		_cache[ message ] = true;
-
-		console.warn( message );
-
-	}
-
 	const _vector$1 = /*@__PURE__*/ new Vector3();
 	const _vector2 = /*@__PURE__*/ new Vector2();
 
@@ -2861,7 +2835,6 @@
 			this.normalized = normalized;
 
 			this.usage = StaticDrawUsage;
-			this._updateRange = { offset: 0, count: - 1 };
 			this.updateRanges = [];
 			this.gpuType = FloatType;
 
@@ -2874,13 +2847,6 @@
 		set needsUpdate( value ) {
 
 			if ( value === true ) this.version ++;
-
-		}
-
-		get updateRange() {
-
-			warnOnce( 'THREE.BufferAttribute: updateRange() is deprecated and will be removed in r169. Use addUpdateRange() instead.' ); // @deprecated, r159
-			return this._updateRange;
 
 		}
 
@@ -5485,12 +5451,7 @@
 
 			if ( object && object.isObject3D ) {
 
-				if ( object.parent !== null ) {
-
-					object.parent.remove( object );
-
-				}
-
+				object.removeFromParent();
 				object.parent = this;
 				this.children.push( object );
 
@@ -5583,9 +5544,17 @@
 
 			object.applyMatrix4( _m1$1 );
 
-			this.add( object );
+			object.removeFromParent();
+			object.parent = this;
+			this.children.push( object );
 
 			object.updateWorldMatrix( false, true );
+
+			object.dispatchEvent( _addedEvent );
+
+			_childaddedEvent.child = object;
+			this.dispatchEvent( _childaddedEvent );
+			_childaddedEvent.child = null;
 
 			return this;
 
@@ -5738,6 +5707,54 @@
 
 			if ( this.matrixWorldNeedsUpdate || force ) {
 
+				if ( this.matrixWorldAutoUpdate === true ) {
+
+					if ( this.parent === null ) {
+
+						this.matrixWorld.copy( this.matrix );
+
+					} else {
+
+						this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+
+					}
+
+				}
+
+				this.matrixWorldNeedsUpdate = false;
+
+				force = true;
+
+			}
+
+			// make sure descendants are updated if required
+
+			const children = this.children;
+
+			for ( let i = 0, l = children.length; i < l; i ++ ) {
+
+				const child = children[ i ];
+
+				child.updateMatrixWorld( force );
+
+			}
+
+		}
+
+		updateWorldMatrix( updateParents, updateChildren ) {
+
+			const parent = this.parent;
+
+			if ( updateParents === true && parent !== null ) {
+
+				parent.updateWorldMatrix( true, false );
+
+			}
+
+			if ( this.matrixAutoUpdate ) this.updateMatrix();
+
+			if ( this.matrixWorldAutoUpdate === true ) {
+
 				if ( this.parent === null ) {
 
 					this.matrixWorld.copy( this.matrix );
@@ -5748,53 +5765,9 @@
 
 				}
 
-				this.matrixWorldNeedsUpdate = false;
-
-				force = true;
-
 			}
 
-			// update children
-
-			const children = this.children;
-
-			for ( let i = 0, l = children.length; i < l; i ++ ) {
-
-				const child = children[ i ];
-
-				if ( child.matrixWorldAutoUpdate === true || force === true ) {
-
-					child.updateMatrixWorld( force );
-
-				}
-
-			}
-
-		}
-
-		updateWorldMatrix( updateParents, updateChildren ) {
-
-			const parent = this.parent;
-
-			if ( updateParents === true && parent !== null && parent.matrixWorldAutoUpdate === true ) {
-
-				parent.updateWorldMatrix( true, false );
-
-			}
-
-			if ( this.matrixAutoUpdate ) this.updateMatrix();
-
-			if ( this.parent === null ) {
-
-				this.matrixWorld.copy( this.matrix );
-
-			} else {
-
-				this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
-
-			}
-
-			// update children
+			// make sure descendants are updated
 
 			if ( updateChildren === true ) {
 
@@ -5804,11 +5777,7 @@
 
 					const child = children[ i ];
 
-					if ( child.matrixWorldAutoUpdate === true ) {
-
-						child.updateWorldMatrix( false, true );
-
-					}
+					child.updateWorldMatrix( false, true );
 
 				}
 
@@ -5901,7 +5870,7 @@
 					sphereCenter: bound.sphere.center.toArray()
 				} ) );
 
-				object.maxGeometryCount = this._maxGeometryCount;
+				object.maxInstanceCount = this._maxInstanceCount;
 				object.maxVertexCount = this._maxVertexCount;
 				object.maxIndexCount = this._maxIndexCount;
 
@@ -5909,6 +5878,8 @@
 				object.geometryCount = this._geometryCount;
 
 				object.matricesTexture = this._matricesTexture.toJSON( meta );
+
+				if ( this._colorsTexture !== null ) object.colorsTexture = this._colorsTexture.toJSON( meta );
 
 				if ( this.boundingSphere !== null ) {
 
@@ -6168,6 +6139,20 @@
 	Object3D.DEFAULT_MATRIX_AUTO_UPDATE = true;
 	Object3D.DEFAULT_MATRIX_WORLD_AUTO_UPDATE = true;
 
+	function arrayNeedsUint32( array ) {
+
+		// assumes larger values usually on last
+
+		for ( let i = array.length - 1; i >= 0; -- i ) {
+
+			if ( array[ i ] >= 65535 ) return true; // account for PRIMITIVE_RESTART_FIXED_INDEX, #24565
+
+		}
+
+		return false;
+
+	}
+
 	let _id = 0;
 
 	const _m1 = /*@__PURE__*/ new Matrix4();
@@ -6193,6 +6178,7 @@
 			this.type = 'BufferGeometry';
 
 			this.index = null;
+			this.indirect = null;
 			this.attributes = {};
 
 			this.morphAttributes = {};
@@ -6228,6 +6214,20 @@
 			}
 
 			return this;
+
+		}
+
+		setIndirect( indirect ) {
+
+			this.indirect = indirect;
+
+			return this;
+
+		}
+
+		getIndirect() {
+
+			return this.indirect;
 
 		}
 
@@ -6430,16 +6430,39 @@
 
 		setFromPoints( points ) {
 
-			const position = [];
+			const positionAttribute = this.getAttribute( 'position' );
 
-			for ( let i = 0, l = points.length; i < l; i ++ ) {
+			if ( positionAttribute === undefined ) {
 
-				const point = points[ i ];
-				position.push( point.x, point.y, point.z || 0 );
+				const position = [];
+
+				for ( let i = 0, l = points.length; i < l; i ++ ) {
+
+					const point = points[ i ];
+					position.push( point.x, point.y, point.z || 0 );
+
+				}
+
+				this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
+
+			} else {
+
+				for ( let i = 0, l = positionAttribute.count; i < l; i ++ ) {
+
+					const point = points[ i ];
+					positionAttribute.setXYZ( i, point.x, point.y, point.z || 0 );
+
+				}
+
+				if ( points.length > positionAttribute.count ) {
+
+					console.warn( 'THREE.BufferGeometry: Buffer size too small for points data. Use .dispose() and create a new geometry.' );
+
+				}
+
+				positionAttribute.needsUpdate = true;
 
 			}
-
-			this.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
 
 			return this;
 
@@ -7896,6 +7919,11 @@
 	  defs('EPSG:4326', "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees");
 	  defs('EPSG:4269', "+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees");
 	  defs('EPSG:3857', "+title=WGS 84 / Pseudo-Mercator +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs");
+	  // UTM WGS84
+	  for (var i = 1; i <= 60; ++i) {
+	    defs('EPSG:' + (32600 + i), "+proj=utm +zone=" + i + " +datum=WGS84 +units=m");
+	    defs('EPSG:' + (32700 + i), "+proj=utm +zone=" + i + " +south +datum=WGS84 +units=m");
+	  }
 
 	  defs.WGS84 = defs['EPSG:4326'];
 	  defs['EPSG:3785'] = defs['EPSG:3857']; // maintain backward compat, official code is 3857
@@ -7934,25 +7962,43 @@
 	// floating point error) from changing their sign.
 	var SPI = 3.14159265359;
 
-	var exports$3 = {};
+	var exports$2 = {};
 
-	exports$3.greenwich = 0.0; //"0dE",
-	exports$3.lisbon = -9.131906111111; //"9d07'54.862\"W",
-	exports$3.paris = 2.337229166667; //"2d20'14.025\"E",
-	exports$3.bogota = -74.080916666667; //"74d04'51.3\"W",
-	exports$3.madrid = -3.687938888889; //"3d41'16.58\"W",
-	exports$3.rome = 12.452333333333; //"12d27'8.4\"E",
-	exports$3.bern = 7.439583333333; //"7d26'22.5\"E",
-	exports$3.jakarta = 106.807719444444; //"106d48'27.79\"E",
-	exports$3.ferro = -17.666666666667; //"17d40'W",
-	exports$3.brussels = 4.367975; //"4d22'4.71\"E",
-	exports$3.stockholm = 18.058277777778; //"18d3'29.8\"E",
-	exports$3.athens = 23.7163375; //"23d42'58.815\"E",
-	exports$3.oslo = 10.722916666667; //"10d43'22.5\"E"
+	exports$2.greenwich = 0.0; //"0dE",
+	exports$2.lisbon = -9.131906111111; //"9d07'54.862\"W",
+	exports$2.paris = 2.337229166667; //"2d20'14.025\"E",
+	exports$2.bogota = -74.080916666667; //"74d04'51.3\"W",
+	exports$2.madrid = -3.687938888889; //"3d41'16.58\"W",
+	exports$2.rome = 12.452333333333; //"12d27'8.4\"E",
+	exports$2.bern = 7.439583333333; //"7d26'22.5\"E",
+	exports$2.jakarta = 106.807719444444; //"106d48'27.79\"E",
+	exports$2.ferro = -17.666666666667; //"17d40'W",
+	exports$2.brussels = 4.367975; //"4d22'4.71\"E",
+	exports$2.stockholm = 18.058277777778; //"18d3'29.8\"E",
+	exports$2.athens = 23.7163375; //"23d42'58.815\"E",
+	exports$2.oslo = 10.722916666667; //"10d43'22.5\"E"
 
 	var units = {
-	  ft: {to_meter: 0.3048},
-	  'us-ft': {to_meter: 1200 / 3937}
+	  'mm': {to_meter: 0.001},
+	  'cm': {to_meter: 0.01},
+	  'ft': {to_meter: 0.3048},
+	  'us-ft': {to_meter: 1200 / 3937},
+	  'fath': {to_meter: 1.8288},
+	  'kmi': {to_meter: 1852},
+	  'us-ch': {to_meter: 20.1168402336805},
+	  'us-mi': {to_meter: 1609.34721869444},
+	  'km': {to_meter: 1000},
+	  'ind-ft': {to_meter: 0.30479841},
+	  'ind-yd': {to_meter: 0.91439523},
+	  'mi': {to_meter: 1609.344},
+	  'yd': {to_meter: 0.9144},
+	  'ch': {to_meter: 20.1168},
+	  'link': {to_meter: 0.201168},
+	  'dm': {to_meter: 0.01},
+	  'in': {to_meter: 0.0254},
+	  'ind-ch': {to_meter: 20.11669506},
+	  'us-in': {to_meter: 0.025400050800101},
+	  'us-yd': {to_meter: 0.914401828803658}
 	};
 
 	var ignoredChar = /[\s_\-\/\(\)]/g;
@@ -8040,6 +8086,9 @@
 	    b: function(v) {
 	      self.b = parseFloat(v);
 	    },
+	    r: function(v) {
+	      self.a = self.b = parseFloat(v);
+	    },
 	    r_a: function() {
 	      self.R_A = true;
 	    },
@@ -8068,7 +8117,7 @@
 	      self.from_greenwich = v * D2R$1;
 	    },
 	    pm: function(v) {
-	      var pm = match(exports$3, v);
+	      var pm = match(exports$2, v);
 	      self.from_greenwich = (pm ? pm : parseFloat(v)) * D2R$1;
 	    },
 	    nadgrids: function(v) {
@@ -8355,6 +8404,21 @@
 	        sExpr(v[3], obj[key]);
 	      }
 	      return;
+	    case 'EDATUM':
+	    case 'ENGINEERINGDATUM':
+	    case 'LOCAL_DATUM':
+	    case 'DATUM':
+	    case 'VERT_CS':
+	    case 'VERTCRS':
+	    case 'VERTICALCRS':
+	      v[0] = ['name', v[0]];
+	      mapit(obj, key, v);
+	      return;
+	    case 'COMPD_CS':
+	    case 'COMPOUNDCRS':
+	    case 'FITTED_CS':
+	    // the followings are the crs defined in
+	    // https://github.com/proj4js/proj4js/blob/1da4ed0b865d0fcb51c136090569210cdcc9019e/lib/parseCode.js#L11
 	    case 'PROJECTEDCRS':
 	    case 'PROJCRS':
 	    case 'GEOGCS':
@@ -8364,20 +8428,11 @@
 	    case 'GEODCRS':
 	    case 'GEODETICCRS':
 	    case 'GEODETICDATUM':
-	    case 'EDATUM':
-	    case 'ENGINEERINGDATUM':
-	    case 'VERT_CS':
-	    case 'VERTCRS':
-	    case 'VERTICALCRS':
-	    case 'COMPD_CS':
-	    case 'COMPOUNDCRS':
-	    case 'ENGINEERINGCRS':
 	    case 'ENGCRS':
-	    case 'FITTED_CS':
-	    case 'LOCAL_DATUM':
-	    case 'DATUM':
+	    case 'ENGINEERINGCRS':
 	      v[0] = ['name', v[0]];
 	      mapit(obj, key, v);
+	      obj[key].type = key;
 	      return;
 	    default:
 	      i = -1;
@@ -8392,7 +8447,8 @@
 
 	var D2R = 0.01745329251994329577;
 
-
+	var knownTypes = ['PROJECTEDCRS', 'PROJCRS', 'GEOGCS', 'GEOCCS', 'PROJCS', 'LOCAL_CS', 'GEODCRS',
+	  'GEODETICCRS', 'GEODETICDATUM', 'ENGCRS', 'ENGINEERINGCRS'];
 
 	function rename(obj, params) {
 	  var outName = params[0];
@@ -8410,6 +8466,27 @@
 	}
 
 	function cleanWKT(wkt) {
+	  var keys = Object.keys(wkt);
+	  for (var i = 0, ii = keys.length; i <ii; ++i) {
+	    var key = keys[i];
+	    // the followings are the crs defined in
+	    // https://github.com/proj4js/proj4js/blob/1da4ed0b865d0fcb51c136090569210cdcc9019e/lib/parseCode.js#L11
+	    if (knownTypes.indexOf(key) !== -1) {
+	      setPropertiesFromWkt(wkt[key]);
+	    }
+	    if (typeof wkt[key] === 'object') {
+	      cleanWKT(wkt[key]);
+	    }
+	  }
+	}
+
+	function setPropertiesFromWkt(wkt) {
+	  if (wkt.AUTHORITY) {
+	    var authority = Object.keys(wkt.AUTHORITY)[0];
+	    if (authority && authority in wkt.AUTHORITY) {
+	      wkt.title = authority + ':' + wkt.AUTHORITY[authority];
+	    }
+	  }
 	  if (wkt.type === 'GEOGCS') {
 	    wkt.projName = 'longlat';
 	  } else if (wkt.type === 'LOCAL_CS') {
@@ -8474,7 +8551,7 @@
 	    if (wkt.datumCode.slice(0, 2) === 'd_') {
 	      wkt.datumCode = wkt.datumCode.slice(2);
 	    }
-	    if (wkt.datumCode === 'new_zealand_geodetic_datum_1949' || wkt.datumCode === 'new_zealand_1949') {
+	    if (wkt.datumCode === 'new_zealand_1949') {
 	      wkt.datumCode = 'nzgd49';
 	    }
 	    if (wkt.datumCode === 'wgs_1984' || wkt.datumCode === 'world_geodetic_system_1984') {
@@ -8483,13 +8560,7 @@
 	      }
 	      wkt.datumCode = 'wgs84';
 	    }
-	    if (wkt.datumCode.slice(-6) === '_ferro') {
-	      wkt.datumCode = wkt.datumCode.slice(0, - 6);
-	    }
-	    if (wkt.datumCode.slice(-8) === '_jakarta') {
-	      wkt.datumCode = wkt.datumCode.slice(0, - 8);
-	    }
-	    if (~wkt.datumCode.indexOf('belge')) {
+	    if (wkt.datumCode === 'belge_1972') {
 	      wkt.datumCode = 'rnb72';
 	    }
 	    if (geogcs.DATUM && geogcs.DATUM.SPHEROID) {
@@ -8584,14 +8655,11 @@
 	}
 	function wkt(wkt) {
 	  var lisp = parseString(wkt);
-	  var type = lisp.shift();
-	  var name = lisp.shift();
-	  lisp.unshift(['name', name]);
-	  lisp.unshift(['type', type]);
+	  var type = lisp[0];
 	  var obj = {};
 	  sExpr(lisp, obj);
 	  cleanWKT(obj);
-	  return obj;
+	  return obj[type];
 	}
 
 	function defs(name) {
@@ -8753,7 +8821,7 @@
 	  return -9999;
 	}
 
-	function init$v() {
+	function init$x() {
 	  var con = this.b / this.a;
 	  this.es = 1 - con * con;
 	  if(!('x0' in this)){
@@ -8786,7 +8854,7 @@
 	/* Mercator forward equations--mapping lat,long to x,y
 	  --------------------------------------------------*/
 
-	function forward$u(p) {
+	function forward$v(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  // convert to radians
@@ -8817,7 +8885,7 @@
 
 	/* Mercator inverse equations--mapping x,y to lat/long
 	  --------------------------------------------------*/
-	function inverse$u(p) {
+	function inverse$v(p) {
 
 	  var x = p.x - this.x0;
 	  var y = p.y - this.y0;
@@ -8840,31 +8908,31 @@
 	  return p;
 	}
 
-	var names$w = ["Mercator", "Popular Visualisation Pseudo Mercator", "Mercator_1SP", "Mercator_Auxiliary_Sphere", "merc"];
+	var names$y = ["Mercator", "Popular Visualisation Pseudo Mercator", "Mercator_1SP", "Mercator_Auxiliary_Sphere", "merc"];
 	var merc = {
-	  init: init$v,
-	  forward: forward$u,
-	  inverse: inverse$u,
-	  names: names$w
+	  init: init$x,
+	  forward: forward$v,
+	  inverse: inverse$v,
+	  names: names$y
 	};
 
-	function init$u() {
+	function init$w() {
 	  //no-op for longlat
 	}
 
 	function identity(pt) {
 	  return pt;
 	}
-	var names$v = ["longlat", "identity"];
+	var names$x = ["longlat", "identity"];
 	var longlat = {
-	  init: init$u,
+	  init: init$w,
 	  forward: identity,
 	  inverse: identity,
-	  names: names$v
+	  names: names$x
 	};
 
 	var projs = [merc, longlat];
-	var names$u = {};
+	var names$w = {};
 	var projStore = [];
 
 	function add(proj, i) {
@@ -8875,7 +8943,7 @@
 	  }
 	  projStore[len] = proj;
 	  proj.names.forEach(function(n) {
-	    names$u[n.toLowerCase()] = len;
+	    names$w[n.toLowerCase()] = len;
 	  });
 	  return this;
 	}
@@ -8885,8 +8953,8 @@
 	    return false;
 	  }
 	  var n = name.toLowerCase();
-	  if (typeof names$u[n] !== 'undefined' && projStore[names$u[n]]) {
-	    return projStore[names$u[n]];
+	  if (typeof names$w[n] !== 'undefined' && projStore[names$w[n]]) {
+	    return projStore[names$w[n]];
 	  }
 	}
 
@@ -8899,267 +8967,267 @@
 	  get: get
 	};
 
-	var exports$2 = {};
-	exports$2.MERIT = {
+	var exports$1 = {};
+	exports$1.MERIT = {
 	  a: 6378137.0,
 	  rf: 298.257,
 	  ellipseName: "MERIT 1983"
 	};
 
-	exports$2.SGS85 = {
+	exports$1.SGS85 = {
 	  a: 6378136.0,
 	  rf: 298.257,
 	  ellipseName: "Soviet Geodetic System 85"
 	};
 
-	exports$2.GRS80 = {
+	exports$1.GRS80 = {
 	  a: 6378137.0,
 	  rf: 298.257222101,
 	  ellipseName: "GRS 1980(IUGG, 1980)"
 	};
 
-	exports$2.IAU76 = {
+	exports$1.IAU76 = {
 	  a: 6378140.0,
 	  rf: 298.257,
 	  ellipseName: "IAU 1976"
 	};
 
-	exports$2.airy = {
+	exports$1.airy = {
 	  a: 6377563.396,
 	  b: 6356256.910,
 	  ellipseName: "Airy 1830"
 	};
 
-	exports$2.APL4 = {
+	exports$1.APL4 = {
 	  a: 6378137,
 	  rf: 298.25,
 	  ellipseName: "Appl. Physics. 1965"
 	};
 
-	exports$2.NWL9D = {
+	exports$1.NWL9D = {
 	  a: 6378145.0,
 	  rf: 298.25,
 	  ellipseName: "Naval Weapons Lab., 1965"
 	};
 
-	exports$2.mod_airy = {
+	exports$1.mod_airy = {
 	  a: 6377340.189,
 	  b: 6356034.446,
 	  ellipseName: "Modified Airy"
 	};
 
-	exports$2.andrae = {
+	exports$1.andrae = {
 	  a: 6377104.43,
 	  rf: 300.0,
 	  ellipseName: "Andrae 1876 (Den., Iclnd.)"
 	};
 
-	exports$2.aust_SA = {
+	exports$1.aust_SA = {
 	  a: 6378160.0,
 	  rf: 298.25,
 	  ellipseName: "Australian Natl & S. Amer. 1969"
 	};
 
-	exports$2.GRS67 = {
+	exports$1.GRS67 = {
 	  a: 6378160.0,
 	  rf: 298.2471674270,
 	  ellipseName: "GRS 67(IUGG 1967)"
 	};
 
-	exports$2.bessel = {
+	exports$1.bessel = {
 	  a: 6377397.155,
 	  rf: 299.1528128,
 	  ellipseName: "Bessel 1841"
 	};
 
-	exports$2.bess_nam = {
+	exports$1.bess_nam = {
 	  a: 6377483.865,
 	  rf: 299.1528128,
 	  ellipseName: "Bessel 1841 (Namibia)"
 	};
 
-	exports$2.clrk66 = {
+	exports$1.clrk66 = {
 	  a: 6378206.4,
 	  b: 6356583.8,
 	  ellipseName: "Clarke 1866"
 	};
 
-	exports$2.clrk80 = {
+	exports$1.clrk80 = {
 	  a: 6378249.145,
 	  rf: 293.4663,
 	  ellipseName: "Clarke 1880 mod."
 	};
 
-	exports$2.clrk80ign = {
+	exports$1.clrk80ign = {
 	  a: 6378249.2,
 	  b: 6356515,
 	  rf: 293.4660213,
 	  ellipseName: "Clarke 1880 (IGN)"
 	};
 
-	exports$2.clrk58 = {
+	exports$1.clrk58 = {
 	  a: 6378293.645208759,
 	  rf: 294.2606763692654,
 	  ellipseName: "Clarke 1858"
 	};
 
-	exports$2.CPM = {
+	exports$1.CPM = {
 	  a: 6375738.7,
 	  rf: 334.29,
 	  ellipseName: "Comm. des Poids et Mesures 1799"
 	};
 
-	exports$2.delmbr = {
+	exports$1.delmbr = {
 	  a: 6376428.0,
 	  rf: 311.5,
 	  ellipseName: "Delambre 1810 (Belgium)"
 	};
 
-	exports$2.engelis = {
+	exports$1.engelis = {
 	  a: 6378136.05,
 	  rf: 298.2566,
 	  ellipseName: "Engelis 1985"
 	};
 
-	exports$2.evrst30 = {
+	exports$1.evrst30 = {
 	  a: 6377276.345,
 	  rf: 300.8017,
 	  ellipseName: "Everest 1830"
 	};
 
-	exports$2.evrst48 = {
+	exports$1.evrst48 = {
 	  a: 6377304.063,
 	  rf: 300.8017,
 	  ellipseName: "Everest 1948"
 	};
 
-	exports$2.evrst56 = {
+	exports$1.evrst56 = {
 	  a: 6377301.243,
 	  rf: 300.8017,
 	  ellipseName: "Everest 1956"
 	};
 
-	exports$2.evrst69 = {
+	exports$1.evrst69 = {
 	  a: 6377295.664,
 	  rf: 300.8017,
 	  ellipseName: "Everest 1969"
 	};
 
-	exports$2.evrstSS = {
+	exports$1.evrstSS = {
 	  a: 6377298.556,
 	  rf: 300.8017,
 	  ellipseName: "Everest (Sabah & Sarawak)"
 	};
 
-	exports$2.fschr60 = {
+	exports$1.fschr60 = {
 	  a: 6378166.0,
 	  rf: 298.3,
 	  ellipseName: "Fischer (Mercury Datum) 1960"
 	};
 
-	exports$2.fschr60m = {
+	exports$1.fschr60m = {
 	  a: 6378155.0,
 	  rf: 298.3,
 	  ellipseName: "Fischer 1960"
 	};
 
-	exports$2.fschr68 = {
+	exports$1.fschr68 = {
 	  a: 6378150.0,
 	  rf: 298.3,
 	  ellipseName: "Fischer 1968"
 	};
 
-	exports$2.helmert = {
+	exports$1.helmert = {
 	  a: 6378200.0,
 	  rf: 298.3,
 	  ellipseName: "Helmert 1906"
 	};
 
-	exports$2.hough = {
+	exports$1.hough = {
 	  a: 6378270.0,
 	  rf: 297.0,
 	  ellipseName: "Hough"
 	};
 
-	exports$2.intl = {
+	exports$1.intl = {
 	  a: 6378388.0,
 	  rf: 297.0,
 	  ellipseName: "International 1909 (Hayford)"
 	};
 
-	exports$2.kaula = {
+	exports$1.kaula = {
 	  a: 6378163.0,
 	  rf: 298.24,
 	  ellipseName: "Kaula 1961"
 	};
 
-	exports$2.lerch = {
+	exports$1.lerch = {
 	  a: 6378139.0,
 	  rf: 298.257,
 	  ellipseName: "Lerch 1979"
 	};
 
-	exports$2.mprts = {
+	exports$1.mprts = {
 	  a: 6397300.0,
 	  rf: 191.0,
 	  ellipseName: "Maupertius 1738"
 	};
 
-	exports$2.new_intl = {
+	exports$1.new_intl = {
 	  a: 6378157.5,
 	  b: 6356772.2,
 	  ellipseName: "New International 1967"
 	};
 
-	exports$2.plessis = {
+	exports$1.plessis = {
 	  a: 6376523.0,
 	  rf: 6355863.0,
 	  ellipseName: "Plessis 1817 (France)"
 	};
 
-	exports$2.krass = {
+	exports$1.krass = {
 	  a: 6378245.0,
 	  rf: 298.3,
 	  ellipseName: "Krassovsky, 1942"
 	};
 
-	exports$2.SEasia = {
+	exports$1.SEasia = {
 	  a: 6378155.0,
 	  b: 6356773.3205,
 	  ellipseName: "Southeast Asia"
 	};
 
-	exports$2.walbeck = {
+	exports$1.walbeck = {
 	  a: 6376896.0,
 	  b: 6355834.8467,
 	  ellipseName: "Walbeck"
 	};
 
-	exports$2.WGS60 = {
+	exports$1.WGS60 = {
 	  a: 6378165.0,
 	  rf: 298.3,
 	  ellipseName: "WGS 60"
 	};
 
-	exports$2.WGS66 = {
+	exports$1.WGS66 = {
 	  a: 6378145.0,
 	  rf: 298.25,
 	  ellipseName: "WGS 66"
 	};
 
-	exports$2.WGS7 = {
+	exports$1.WGS7 = {
 	  a: 6378135.0,
 	  rf: 298.26,
 	  ellipseName: "WGS 72"
 	};
 
-	var WGS84 = exports$2.WGS84 = {
+	var WGS84 = exports$1.WGS84 = {
 	  a: 6378137.0,
 	  rf: 298.257223563,
 	  ellipseName: "WGS 84"
 	};
 
-	exports$2.sphere = {
+	exports$1.sphere = {
 	  a: 6370997.0,
 	  b: 6370997.0,
 	  ellipseName: "Normal Sphere (r=6370997)"
@@ -9186,7 +9254,7 @@
 	}
 	function sphere(a, b, rf, ellps, sphere) {
 	  if (!a) { // do we have an ellipsoid?
-	    var ellipse = match(exports$2, ellps);
+	    var ellipse = match(exports$1, ellps);
 	    if (!ellipse) {
 	      ellipse = WGS84;
 	    }
@@ -9210,114 +9278,103 @@
 	  };
 	}
 
-	var exports$1 = {};
-	exports$1.wgs84 = {
-	  towgs84: "0,0,0",
-	  ellipse: "WGS84",
-	  datumName: "WGS84"
+	var datums = {
+	  wgs84: {
+	    towgs84: "0,0,0",
+	    ellipse: "WGS84",
+	    datumName: "WGS84"
+	  },
+	  ch1903: {
+	    towgs84: "674.374,15.056,405.346",
+	    ellipse: "bessel",
+	    datumName: "swiss"
+	  },
+	  ggrs87: {
+	    towgs84: "-199.87,74.79,246.62",
+	    ellipse: "GRS80",
+	    datumName: "Greek_Geodetic_Reference_System_1987"
+	  },
+	  nad83: {
+	    towgs84: "0,0,0",
+	    ellipse: "GRS80",
+	    datumName: "North_American_Datum_1983"
+	  },
+	  nad27: {
+	    nadgrids: "@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat",
+	    ellipse: "clrk66",
+	    datumName: "North_American_Datum_1927"
+	  },
+	  potsdam: {
+	    towgs84: "598.1,73.7,418.2,0.202,0.045,-2.455,6.7",
+	    ellipse: "bessel",
+	    datumName: "Potsdam Rauenberg 1950 DHDN"
+	  },
+	  carthage: {
+	    towgs84: "-263.0,6.0,431.0",
+	    ellipse: "clark80",
+	    datumName: "Carthage 1934 Tunisia"
+	  },
+	  hermannskogel: {
+	    towgs84: "577.326,90.129,463.919,5.137,1.474,5.297,2.4232",
+	    ellipse: "bessel",
+	    datumName: "Hermannskogel"
+	  },
+	  mgi: {
+	    towgs84: "577.326,90.129,463.919,5.137,1.474,5.297,2.4232",
+	    ellipse: "bessel",
+	    datumName: "Militar-Geographische Institut",
+	  },
+	  osni52: {
+	    towgs84: "482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15",
+	    ellipse: "airy",
+	    datumName: "Irish National"
+	  },
+	  ire65: {
+	    towgs84: "482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15",
+	    ellipse: "mod_airy",
+	    datumName: "Ireland 1965"
+	  },
+	  rassadiran: {
+	    towgs84: "-133.63,-157.5,-158.62",
+	    ellipse: "intl",
+	    datumName: "Rassadiran"
+	  },
+	  nzgd49: {
+	    towgs84: "59.47,-5.04,187.44,0.47,-0.1,1.024,-4.5993",
+	    ellipse: "intl",
+	    datumName: "New Zealand Geodetic Datum 1949"
+	  },
+	  osgb36: {
+	    towgs84: "446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894",
+	    ellipse: "airy",
+	    datumName: "Ordnance Survey of Great Britain 1936"
+	  },
+	  s_jtsk: {
+	    towgs84: "589,76,480",
+	    ellipse: 'bessel',
+	    datumName: 'S-JTSK (Ferro)'
+	  },
+	  beduaram: {
+	    towgs84: '-106,-87,188',
+	    ellipse: 'clrk80',
+	    datumName: 'Beduaram'
+	  },
+	  gunung_segara: {
+	    towgs84: '-403,684,41',
+	    ellipse: 'bessel',
+	    datumName: 'Gunung Segara Jakarta'
+	  },
+	  rnb72: {
+	    towgs84: "106.869,-52.2978,103.724,-0.33657,0.456955,-1.84218,1",
+	    ellipse: "intl",
+	    datumName: "Reseau National Belge 1972"
+	  }
 	};
 
-	exports$1.ch1903 = {
-	  towgs84: "674.374,15.056,405.346",
-	  ellipse: "bessel",
-	  datumName: "swiss"
-	};
-
-	exports$1.ggrs87 = {
-	  towgs84: "-199.87,74.79,246.62",
-	  ellipse: "GRS80",
-	  datumName: "Greek_Geodetic_Reference_System_1987"
-	};
-
-	exports$1.nad83 = {
-	  towgs84: "0,0,0",
-	  ellipse: "GRS80",
-	  datumName: "North_American_Datum_1983"
-	};
-
-	exports$1.nad27 = {
-	  nadgrids: "@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat",
-	  ellipse: "clrk66",
-	  datumName: "North_American_Datum_1927"
-	};
-
-	exports$1.potsdam = {
-	  towgs84: "598.1,73.7,418.2,0.202,0.045,-2.455,6.7",
-	  ellipse: "bessel",
-	  datumName: "Potsdam Rauenberg 1950 DHDN"
-	};
-
-	exports$1.carthage = {
-	  towgs84: "-263.0,6.0,431.0",
-	  ellipse: "clark80",
-	  datumName: "Carthage 1934 Tunisia"
-	};
-
-	exports$1.hermannskogel = {
-	  towgs84: "577.326,90.129,463.919,5.137,1.474,5.297,2.4232",
-	  ellipse: "bessel",
-	  datumName: "Hermannskogel"
-	};
-
-	exports$1.militargeographische_institut = {
-	  towgs84: "577.326,90.129,463.919,5.137,1.474,5.297,2.4232",
-	  ellipse: "bessel",
-	  datumName: "Militar-Geographische Institut"
-	};
-
-	exports$1.osni52 = {
-	  towgs84: "482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15",
-	  ellipse: "airy",
-	  datumName: "Irish National"
-	};
-
-	exports$1.ire65 = {
-	  towgs84: "482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15",
-	  ellipse: "mod_airy",
-	  datumName: "Ireland 1965"
-	};
-
-	exports$1.rassadiran = {
-	  towgs84: "-133.63,-157.5,-158.62",
-	  ellipse: "intl",
-	  datumName: "Rassadiran"
-	};
-
-	exports$1.nzgd49 = {
-	  towgs84: "59.47,-5.04,187.44,0.47,-0.1,1.024,-4.5993",
-	  ellipse: "intl",
-	  datumName: "New Zealand Geodetic Datum 1949"
-	};
-
-	exports$1.osgb36 = {
-	  towgs84: "446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894",
-	  ellipse: "airy",
-	  datumName: "Airy 1830"
-	};
-
-	exports$1.s_jtsk = {
-	  towgs84: "589,76,480",
-	  ellipse: 'bessel',
-	  datumName: 'S-JTSK (Ferro)'
-	};
-
-	exports$1.beduaram = {
-	  towgs84: '-106,-87,188',
-	  ellipse: 'clrk80',
-	  datumName: 'Beduaram'
-	};
-
-	exports$1.gunung_segara = {
-	  towgs84: '-403,684,41',
-	  ellipse: 'bessel',
-	  datumName: 'Gunung Segara Jakarta'
-	};
-
-	exports$1.rnb72 = {
-	  towgs84: "106.869,-52.2978,103.724,-0.33657,0.456955,-1.84218,1",
-	  ellipse: "intl",
-	  datumName: "Reseau National Belge 1972"
-	};
+	for (var key in datums) {
+	  var datum$1 = datums[key];
+	  datums[datum$1.datumName] = datum$1;
+	}
 
 	function datum(datumCode, datum_params, a, b, es, ep2, nadgrids) {
 	  var out = {};
@@ -9507,16 +9564,16 @@
 	  };
 	  var json = parse(srsCode);
 	  if(typeof json !== 'object'){
-	    callback(srsCode);
+	    callback('Could not parse to valid json: ' + srsCode);
 	    return;
 	  }
 	  var ourProj = Projection.projections.get(json.projName);
 	  if(!ourProj){
-	    callback(srsCode);
+	    callback('Could not get projection name from: ' + srsCode);
 	    return;
 	  }
 	  if (json.datumCode && json.datumCode !== 'none') {
-	    var datumDef = match(exports$1, json.datumCode);
+	    var datumDef = match(datums, json.datumCode);
 	    if (datumDef) {
 	      json.datum_params = json.datum_params || (datumDef.towgs84 ? datumDef.towgs84.split(',') : null);
 	      json.ellps = datumDef.ellipse;
@@ -10190,12 +10247,12 @@
 	    if (coords.length > 2) {
 	      if ((typeof from.name !== 'undefined' && from.name === 'geocent') || (typeof to.name !== 'undefined' && to.name === 'geocent')) {
 	        if (typeof transformedArray.z === 'number') {
-	          return [transformedArray.x, transformedArray.y, transformedArray.z].concat(coords.splice(3));
+	          return [transformedArray.x, transformedArray.y, transformedArray.z].concat(coords.slice(3));
 	        } else {
-	          return [transformedArray.x, transformedArray.y, coords[2]].concat(coords.splice(3));
+	          return [transformedArray.x, transformedArray.y, coords[2]].concat(coords.slice(3));
 	        }
 	      } else {
-	        return [transformedArray.x, transformedArray.y].concat(coords.splice(2));
+	        return [transformedArray.x, transformedArray.y].concat(coords.slice(2));
 	      }
 	    } else {
 	      return [transformedArray.x, transformedArray.y];
@@ -10295,8 +10352,8 @@
 	var V = 86; // V
 	var Z = 90; // Z
 	var mgrs = {
-	  forward: forward$t,
-	  inverse: inverse$t,
+	  forward: forward$u,
+	  inverse: inverse$u,
 	  toPoint: toPoint
 	};
 	/**
@@ -10308,7 +10365,7 @@
 	 *      100 m, 2 for 1000 m or 1 for 10000 m). Optional, default is 5.
 	 * @return {string} the MGRS string for the given location and accuracy.
 	 */
-	function forward$t(ll, accuracy) {
+	function forward$u(ll, accuracy) {
 	  accuracy = accuracy || 5; // default accuracy 1m
 	  return encode(LLtoUTM({
 	    lat: ll[1],
@@ -10323,7 +10380,7 @@
 	 *     (longitude) and top (latitude) values in WGS84, representing the
 	 *     bounding box for the provided MGRS reference.
 	 */
-	function inverse$t(mgrs) {
+	function inverse$u(mgrs) {
 	  var bbox = UTMtoLL(decode(mgrs.toUpperCase()));
 	  if (bbox.lat && bbox.lon) {
 	    return [bbox.lon, bbox.lat, bbox.lon, bbox.lat];
@@ -11035,7 +11092,7 @@
 	  return new Point(toPoint(mgrsStr));
 	};
 	Point.prototype.toMGRS = function(accuracy) {
-	  return forward$t([this.x, this.y], accuracy);
+	  return forward$u([this.x, this.y], accuracy);
 	};
 
 	var C00 = 1;
@@ -11093,7 +11150,7 @@
 	// https://github.com/mbloch/mapshaper-proj/blob/master/src/projections/tmerc.js
 
 
-	function init$t() {
+	function init$v() {
 	  this.x0 = this.x0 !== undefined ? this.x0 : 0;
 	  this.y0 = this.y0 !== undefined ? this.y0 : 0;
 	  this.long0 = this.long0 !== undefined ? this.long0 : 0;
@@ -11109,7 +11166,7 @@
 	    Transverse Mercator Forward  - long/lat to x/y
 	    long/lat in radians
 	  */
-	function forward$s(p) {
+	function forward$t(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 
@@ -11184,7 +11241,7 @@
 	/**
 	    Transverse Mercator Inverse  -  x/y to long/lat
 	  */
-	function inverse$s(p) {
+	function inverse$t(p) {
 	  var con, phi;
 	  var lat, lon;
 	  var x = (p.x - this.x0) * (1 / this.a);
@@ -11248,12 +11305,12 @@
 	  return p;
 	}
 
-	var names$t = ["Fast_Transverse_Mercator", "Fast Transverse Mercator"];
+	var names$v = ["Fast_Transverse_Mercator", "Fast Transverse Mercator"];
 	var tmerc = {
-	  init: init$t,
-	  forward: forward$s,
-	  inverse: inverse$s,
-	  names: names$t
+	  init: init$v,
+	  forward: forward$t,
+	  inverse: inverse$t,
+	  names: names$v
 	};
 
 	function sinh(x) {
@@ -11357,7 +11414,7 @@
 	// https://github.com/mbloch/mapshaper-proj/blob/master/src/projections/etmerc.js
 
 
-	function init$s() {
+	function init$u() {
 	  if (!this.approx && (isNaN(this.es) || this.es <= 0)) {
 	    throw new Error('Incorrect elliptical usage. Try using the +approx option in the proj string, or PROJECTION["Fast_Transverse_Mercator"] in the WKT.');
 	  }
@@ -11434,7 +11491,7 @@
 	  this.Zb = -this.Qn * (Z + clens(this.gtu, 2 * Z));
 	}
 
-	function forward$r(p) {
+	function forward$s(p) {
 	  var Ce = adjust_lon(p.x - this.long0);
 	  var Cn = p.y;
 
@@ -11471,7 +11528,7 @@
 	  return p;
 	}
 
-	function inverse$r(p) {
+	function inverse$s(p) {
 	  var Ce = (p.x - this.x0) * (1 / this.a);
 	  var Cn = (p.y - this.y0) * (1 / this.a);
 
@@ -11510,12 +11567,12 @@
 	  return p;
 	}
 
-	var names$s = ["Extended_Transverse_Mercator", "Extended Transverse Mercator", "etmerc", "Transverse_Mercator", "Transverse Mercator", "Gauss Kruger", "Gauss_Kruger", "tmerc"];
+	var names$u = ["Extended_Transverse_Mercator", "Extended Transverse Mercator", "etmerc", "Transverse_Mercator", "Transverse Mercator", "Gauss Kruger", "Gauss_Kruger", "tmerc"];
 	var etmerc = {
-	  init: init$s,
-	  forward: forward$r,
-	  inverse: inverse$r,
-	  names: names$s
+	  init: init$u,
+	  forward: forward$s,
+	  inverse: inverse$s,
+	  names: names$u
 	};
 
 	function adjust_zone(zone, lon) {
@@ -11534,7 +11591,7 @@
 	var dependsOn = 'etmerc';
 
 
-	function init$r() {
+	function init$t() {
 	  var zone = adjust_zone(this.zone, this.long0);
 	  if (zone === undefined) {
 	    throw new Error('unknown utm zone');
@@ -11550,10 +11607,10 @@
 	  this.inverse = etmerc.inverse;
 	}
 
-	var names$r = ["Universal Transverse Mercator System", "utm"];
+	var names$t = ["Universal Transverse Mercator System", "utm"];
 	var utm = {
-	  init: init$r,
-	  names: names$r,
+	  init: init$t,
+	  names: names$t,
 	  dependsOn: dependsOn
 	};
 
@@ -11563,7 +11620,7 @@
 
 	var MAX_ITER$2 = 20;
 
-	function init$q() {
+	function init$s() {
 	  var sphi = Math.sin(this.lat0);
 	  var cphi = Math.cos(this.lat0);
 	  cphi *= cphi;
@@ -11574,7 +11631,7 @@
 	  this.K = Math.tan(0.5 * this.phic0 + FORTPI) / (Math.pow(Math.tan(0.5 * this.lat0 + FORTPI), this.C) * srat(this.e * sphi, this.ratexp));
 	}
 
-	function forward$q(p) {
+	function forward$r(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 
@@ -11583,7 +11640,7 @@
 	  return p;
 	}
 
-	function inverse$q(p) {
+	function inverse$r(p) {
 	  var DEL_TOL = 1e-14;
 	  var lon = p.x / this.C;
 	  var lat = p.y;
@@ -11604,15 +11661,15 @@
 	  return p;
 	}
 
-	var names$q = ["gauss"];
+	var names$s = ["gauss"];
 	var gauss = {
-	  init: init$q,
-	  forward: forward$q,
-	  inverse: inverse$q,
-	  names: names$q
+	  init: init$s,
+	  forward: forward$r,
+	  inverse: inverse$r,
+	  names: names$s
 	};
 
-	function init$p() {
+	function init$r() {
 	  gauss.init.apply(this);
 	  if (!this.rc) {
 	    return;
@@ -11625,7 +11682,7 @@
 	  }
 	}
 
-	function forward$p(p) {
+	function forward$q(p) {
 	  var sinc, cosc, cosl, k;
 	  p.x = adjust_lon(p.x - this.long0);
 	  gauss.forward.apply(this, [p]);
@@ -11640,7 +11697,7 @@
 	  return p;
 	}
 
-	function inverse$p(p) {
+	function inverse$q(p) {
 	  var sinc, cosc, lon, lat, rho;
 	  p.x = (p.x - this.x0) / this.a;
 	  p.y = (p.y - this.y0) / this.a;
@@ -11666,12 +11723,12 @@
 	  return p;
 	}
 
-	var names$p = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
+	var names$r = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
 	var sterea = {
-	  init: init$p,
-	  forward: forward$p,
-	  inverse: inverse$p,
-	  names: names$p
+	  init: init$r,
+	  forward: forward$q,
+	  inverse: inverse$q,
+	  names: names$r
 	};
 
 	function ssfn_(phit, sinphi, eccen) {
@@ -11679,7 +11736,7 @@
 	  return (Math.tan(0.5 * (HALF_PI + phit)) * Math.pow((1 - sinphi) / (1 + sinphi), 0.5 * eccen));
 	}
 
-	function init$o() {
+	function init$q() {
 
 	  // setting default parameters
 	  this.x0 = this.x0 || 0;
@@ -11721,7 +11778,7 @@
 	}
 
 	// Stereographic forward equations--mapping lat,long to x,y
-	function forward$o(p) {
+	function forward$p(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  var sinlat = Math.sin(lat);
@@ -11774,7 +11831,7 @@
 	}
 
 	//* Stereographic inverse equations--mapping x,y to lat/long
-	function inverse$o(p) {
+	function inverse$p(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 	  var lon, lat, ts, ce, Chi;
@@ -11841,12 +11898,12 @@
 
 	}
 
-	var names$o = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
+	var names$q = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
 	var stere = {
-	  init: init$o,
-	  forward: forward$o,
-	  inverse: inverse$o,
-	  names: names$o,
+	  init: init$q,
+	  forward: forward$p,
+	  inverse: inverse$p,
+	  names: names$q,
 	  ssfn_: ssfn_
 	};
 
@@ -11858,7 +11915,7 @@
 	    http://www.swisstopo.admin.ch/internet/swisstopo/fr/home/topics/survey/sys/refsys/switzerland.parsysrelated1.31216.downloadList.77004.DownloadFile.tmp/swissprojectionfr.pdf
 	  */
 
-	function init$n() {
+	function init$p() {
 	  var phy0 = this.lat0;
 	  this.lambda0 = this.long0;
 	  var sinPhy0 = Math.sin(phy0);
@@ -11876,7 +11933,7 @@
 	  this.K = k1 - this.alpha * k2 + this.alpha * e / 2 * k3;
 	}
 
-	function forward$n(p) {
+	function forward$o(p) {
 	  var Sa1 = Math.log(Math.tan(Math.PI / 4 - p.y / 2));
 	  var Sa2 = this.e / 2 * Math.log((1 + this.e * Math.sin(p.y)) / (1 - this.e * Math.sin(p.y)));
 	  var S = -this.alpha * (Sa1 + Sa2) + this.K;
@@ -11897,7 +11954,7 @@
 	  return p;
 	}
 
-	function inverse$n(p) {
+	function inverse$o(p) {
 	  var Y = p.x - this.x0;
 	  var X = p.y - this.y0;
 
@@ -11929,12 +11986,12 @@
 	  return p;
 	}
 
-	var names$n = ["somerc"];
+	var names$p = ["somerc"];
 	var somerc = {
-	  init: init$n,
-	  forward: forward$n,
-	  inverse: inverse$n,
-	  names: names$n
+	  init: init$p,
+	  forward: forward$o,
+	  inverse: inverse$o,
+	  names: names$p
 	};
 
 	var TOL = 1e-7;
@@ -11949,7 +12006,7 @@
 
 	/* Initialize the Oblique Mercator  projection
 	    ------------------------------------------*/
-	function init$m() {  
+	function init$o() {  
 	  var con, com, cosph0, D, F, H, L, sinph0, p, J, gamma = 0,
 	    gamma0, lamc = 0, lam1 = 0, lam2 = 0, phi1 = 0, phi2 = 0, alpha_c = 0;
 	  
@@ -12080,7 +12137,7 @@
 
 	/* Oblique Mercator forward equations--mapping lat,long to x,y
 	    ----------------------------------------------------------*/
-	function forward$m(p) {
+	function forward$n(p) {
 	  var coords = {};
 	  var S, T, U, V, W, temp, u, v;
 	  p.x = p.x - this.lam0;
@@ -12126,7 +12183,7 @@
 	  return coords;
 	}
 
-	function inverse$m(p) {
+	function inverse$n(p) {
 	  var u, v, Qp, Sp, Tp, Vp, Up;
 	  var coords = {};
 	  
@@ -12166,15 +12223,15 @@
 	  return coords;
 	}
 
-	var names$m = ["Hotine_Oblique_Mercator", "Hotine Oblique Mercator", "Hotine_Oblique_Mercator_Azimuth_Natural_Origin", "Hotine_Oblique_Mercator_Two_Point_Natural_Origin", "Hotine_Oblique_Mercator_Azimuth_Center", "Oblique_Mercator", "omerc"];
+	var names$o = ["Hotine_Oblique_Mercator", "Hotine Oblique Mercator", "Hotine_Oblique_Mercator_Azimuth_Natural_Origin", "Hotine_Oblique_Mercator_Two_Point_Natural_Origin", "Hotine_Oblique_Mercator_Azimuth_Center", "Oblique_Mercator", "omerc"];
 	var omerc = {
-	  init: init$m,
-	  forward: forward$m,
-	  inverse: inverse$m,
-	  names: names$m
+	  init: init$o,
+	  forward: forward$n,
+	  inverse: inverse$n,
+	  names: names$o
 	};
 
-	function init$l() {
+	function init$n() {
 	  
 	  //double lat0;                    /* the reference latitude               */
 	  //double long0;                   /* the reference longitude              */
@@ -12234,7 +12291,7 @@
 
 	// Lambert Conformal conic forward equations--mapping lat,long to x,y
 	// -----------------------------------------------------------------
-	function forward$l(p) {
+	function forward$m(p) {
 
 	  var lon = p.x;
 	  var lat = p.y;
@@ -12266,7 +12323,7 @@
 
 	// Lambert Conformal Conic inverse equations--mapping x,y to lat/long
 	// -----------------------------------------------------------------
-	function inverse$l(p) {
+	function inverse$m(p) {
 
 	  var rh1, con, ts;
 	  var lat, lon;
@@ -12302,7 +12359,7 @@
 	  return p;
 	}
 
-	var names$l = [
+	var names$n = [
 	  "Lambert Tangential Conformal Conic Projection",
 	  "Lambert_Conformal_Conic",
 	  "Lambert_Conformal_Conic_1SP",
@@ -12313,13 +12370,13 @@
 	];
 
 	var lcc = {
-	  init: init$l,
-	  forward: forward$l,
-	  inverse: inverse$l,
-	  names: names$l
+	  init: init$n,
+	  forward: forward$m,
+	  inverse: inverse$m,
+	  names: names$n
 	};
 
-	function init$k() {
+	function init$m() {
 	  this.a = 6377397.155;
 	  this.es = 0.006674372230614;
 	  this.e = Math.sqrt(this.es);
@@ -12354,7 +12411,7 @@
 	/* ellipsoid */
 	/* calculate xy from lat/lon */
 	/* Constants, identical to inverse transform function */
-	function forward$k(p) {
+	function forward$l(p) {
 	  var gfi, u, deltav, s, d, eps, ro;
 	  var lon = p.x;
 	  var lat = p.y;
@@ -12378,7 +12435,7 @@
 	}
 
 	/* calculate lat/lon from xy */
-	function inverse$k(p) {
+	function inverse$l(p) {
 	  var u, deltav, s, d, eps, ro, fi1;
 	  var ok;
 
@@ -12416,12 +12473,12 @@
 	  return (p);
 	}
 
-	var names$k = ["Krovak", "krovak"];
+	var names$m = ["Krovak", "krovak"];
 	var krovak = {
-	  init: init$k,
-	  forward: forward$k,
-	  inverse: inverse$k,
-	  names: names$k
+	  init: init$m,
+	  forward: forward$l,
+	  inverse: inverse$l,
+	  names: names$m
 	};
 
 	function mlfn(e0, e1, e2, e3, phi) {
@@ -12470,7 +12527,7 @@
 	  return NaN;
 	}
 
-	function init$j() {
+	function init$l() {
 	  if (!this.sphere) {
 	    this.e0 = e0fn(this.es);
 	    this.e1 = e1fn(this.es);
@@ -12482,7 +12539,7 @@
 
 	/* Cassini forward equations--mapping lat,long to x,y
 	  -----------------------------------------------------------------------*/
-	function forward$j(p) {
+	function forward$k(p) {
 
 	  /* Forward equations
 	      -----------------*/
@@ -12519,7 +12576,7 @@
 
 	/* Inverse equations
 	  -----------------*/
-	function inverse$j(p) {
+	function inverse$k(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 	  var x = p.x / this.a;
@@ -12560,12 +12617,12 @@
 
 	}
 
-	var names$j = ["Cassini", "Cassini_Soldner", "cass"];
+	var names$l = ["Cassini", "Cassini_Soldner", "cass"];
 	var cass = {
-	  init: init$j,
-	  forward: forward$j,
-	  inverse: inverse$j,
-	  names: names$j
+	  init: init$l,
+	  forward: forward$k,
+	  inverse: inverse$k,
+	  names: names$l
 	};
 
 	function qsfnz(eccent, sinphi) {
@@ -12593,7 +12650,7 @@
 
 	/* Initialize the Lambert Azimuthal Equal Area projection
 	  ------------------------------------------------------*/
-	function init$i() {
+	function init$k() {
 	  var t = Math.abs(this.lat0);
 	  if (Math.abs(t - HALF_PI) < EPSLN) {
 	    this.mode = this.lat0 < 0 ? this.S_POLE : this.N_POLE;
@@ -12644,7 +12701,7 @@
 
 	/* Lambert Azimuthal Equal Area forward equations--mapping lat,long to x,y
 	  -----------------------------------------------------------------------*/
-	function forward$i(p) {
+	function forward$j(p) {
 
 	  /* Forward equations
 	      -----------------*/
@@ -12742,7 +12799,7 @@
 
 	/* Inverse equations
 	  -----------------*/
-	function inverse$i(p) {
+	function inverse$j(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 	  var x = p.x / this.a;
@@ -12860,12 +12917,12 @@
 	  return (beta + APA[0] * Math.sin(t) + APA[1] * Math.sin(t + t) + APA[2] * Math.sin(t + t + t));
 	}
 
-	var names$i = ["Lambert Azimuthal Equal Area", "Lambert_Azimuthal_Equal_Area", "laea"];
+	var names$k = ["Lambert Azimuthal Equal Area", "Lambert_Azimuthal_Equal_Area", "laea"];
 	var laea = {
-	  init: init$i,
-	  forward: forward$i,
-	  inverse: inverse$i,
-	  names: names$i,
+	  init: init$k,
+	  forward: forward$j,
+	  inverse: inverse$j,
+	  names: names$k,
 	  S_POLE: S_POLE,
 	  N_POLE: N_POLE,
 	  EQUIT: EQUIT,
@@ -12879,7 +12936,7 @@
 	  return Math.asin(x);
 	}
 
-	function init$h() {
+	function init$j() {
 
 	  if (Math.abs(this.lat1 + this.lat2) < EPSLN) {
 	    return;
@@ -12918,7 +12975,7 @@
 
 	/* Albers Conical Equal Area forward equations--mapping lat,long to x,y
 	  -------------------------------------------------------------------*/
-	function forward$h(p) {
+	function forward$i(p) {
 
 	  var lon = p.x;
 	  var lat = p.y;
@@ -12937,7 +12994,7 @@
 	  return p;
 	}
 
-	function inverse$h(p) {
+	function inverse$i(p) {
 	  var rh1, qs, con, theta, lon, lat;
 
 	  p.x -= this.x0;
@@ -12994,12 +13051,12 @@
 	  return null;
 	}
 
-	var names$h = ["Albers_Conic_Equal_Area", "Albers", "aea"];
+	var names$j = ["Albers_Conic_Equal_Area", "Albers", "aea"];
 	var aea = {
-	  init: init$h,
-	  forward: forward$h,
-	  inverse: inverse$h,
-	  names: names$h,
+	  init: init$j,
+	  forward: forward$i,
+	  inverse: inverse$i,
+	  names: names$j,
 	  phi1z: phi1z
 	};
 
@@ -13009,7 +13066,7 @@
 	    http://mathworld.wolfram.com/GnomonicProjection.html
 	    Accessed: 12th November 2009
 	  */
-	function init$g() {
+	function init$i() {
 
 	  /* Place parameters in static storage for common use
 	      -------------------------------------------------*/
@@ -13022,7 +13079,7 @@
 
 	/* Gnomonic forward equations--mapping lat,long to x,y
 	    ---------------------------------------------------*/
-	function forward$g(p) {
+	function forward$h(p) {
 	  var sinphi, cosphi; /* sin and cos value        */
 	  var dlon; /* delta longitude value      */
 	  var coslon; /* cos of longitude        */
@@ -13063,7 +13120,7 @@
 	  return p;
 	}
 
-	function inverse$g(p) {
+	function inverse$h(p) {
 	  var rh; /* Rho */
 	  var sinc, cosc;
 	  var c;
@@ -13096,12 +13153,12 @@
 	  return p;
 	}
 
-	var names$g = ["gnom"];
+	var names$i = ["gnom"];
 	var gnom = {
-	  init: init$g,
-	  forward: forward$g,
-	  inverse: inverse$g,
-	  names: names$g
+	  init: init$i,
+	  forward: forward$h,
+	  inverse: inverse$h,
+	  names: names$i
 	};
 
 	function iqsfnz(eccent, q) {
@@ -13141,7 +13198,7 @@
 	    A User's Manual" by Gerald I. Evenden,
 	    USGS Open File Report 90-284and Release 4 Interim Reports (2003)
 	*/
-	function init$f() {
+	function init$h() {
 	  //no-op
 	  if (!this.sphere) {
 	    this.k0 = msfnz(this.e, Math.sin(this.lat_ts), Math.cos(this.lat_ts));
@@ -13150,7 +13207,7 @@
 
 	/* Cylindrical Equal Area forward equations--mapping lat,long to x,y
 	    ------------------------------------------------------------*/
-	function forward$f(p) {
+	function forward$g(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  var x, y;
@@ -13174,7 +13231,7 @@
 
 	/* Cylindrical Equal Area inverse equations--mapping x,y to lat/long
 	    ------------------------------------------------------------*/
-	function inverse$f(p) {
+	function inverse$g(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 	  var lon, lat;
@@ -13193,15 +13250,15 @@
 	  return p;
 	}
 
-	var names$f = ["cea"];
+	var names$h = ["cea"];
 	var cea = {
-	  init: init$f,
-	  forward: forward$f,
-	  inverse: inverse$f,
-	  names: names$f
+	  init: init$h,
+	  forward: forward$g,
+	  inverse: inverse$g,
+	  names: names$h
 	};
 
-	function init$e() {
+	function init$g() {
 
 	  this.x0 = this.x0 || 0;
 	  this.y0 = this.y0 || 0;
@@ -13215,7 +13272,7 @@
 
 	// forward equations--mapping lat,long to x,y
 	// -----------------------------------------------------------------
-	function forward$e(p) {
+	function forward$f(p) {
 
 	  var lon = p.x;
 	  var lat = p.y;
@@ -13229,7 +13286,7 @@
 
 	// inverse equations--mapping x,y to lat/long
 	// -----------------------------------------------------------------
-	function inverse$e(p) {
+	function inverse$f(p) {
 
 	  var x = p.x;
 	  var y = p.y;
@@ -13239,17 +13296,17 @@
 	  return p;
 	}
 
-	var names$e = ["Equirectangular", "Equidistant_Cylindrical", "eqc"];
+	var names$g = ["Equirectangular", "Equidistant_Cylindrical", "eqc"];
 	var eqc = {
-	  init: init$e,
-	  forward: forward$e,
-	  inverse: inverse$e,
-	  names: names$e
+	  init: init$g,
+	  forward: forward$f,
+	  inverse: inverse$f,
+	  names: names$g
 	};
 
 	var MAX_ITER$1 = 20;
 
-	function init$d() {
+	function init$f() {
 	  /* Place parameters in static storage for common use
 	      -------------------------------------------------*/
 	  this.temp = this.b / this.a;
@@ -13264,7 +13321,7 @@
 
 	/* Polyconic forward equations--mapping lat,long to x,y
 	    ---------------------------------------------------*/
-	function forward$d(p) {
+	function forward$e(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  var x, y, el;
@@ -13299,7 +13356,7 @@
 
 	/* Inverse equations
 	  -----------------*/
-	function inverse$d(p) {
+	function inverse$e(p) {
 	  var lon, lat, x, y, i;
 	  var al, bl;
 	  var phi, dphi;
@@ -13365,15 +13422,15 @@
 	  return p;
 	}
 
-	var names$d = ["Polyconic", "poly"];
+	var names$f = ["Polyconic", "poly"];
 	var poly = {
-	  init: init$d,
-	  forward: forward$d,
-	  inverse: inverse$d,
-	  names: names$d
+	  init: init$f,
+	  forward: forward$e,
+	  inverse: inverse$e,
+	  names: names$f
 	};
 
-	function init$c() {
+	function init$e() {
 	  this.A = [];
 	  this.A[1] = 0.6399175073;
 	  this.A[2] = -0.1358797613;
@@ -13432,7 +13489,7 @@
 	    New Zealand Map Grid Forward  - long/lat to x/y
 	    long/lat in radians
 	  */
-	function forward$c(p) {
+	function forward$d(p) {
 	  var n;
 	  var lon = p.x;
 	  var lat = p.y;
@@ -13483,7 +13540,7 @@
 	/**
 	    New Zealand Map Grid Inverse  -  x/y to long/lat
 	  */
-	function inverse$c(p) {
+	function inverse$d(p) {
 	  var n;
 	  var x = p.x;
 	  var y = p.y;
@@ -13574,12 +13631,12 @@
 	  return p;
 	}
 
-	var names$c = ["New_Zealand_Map_Grid", "nzmg"];
+	var names$e = ["New_Zealand_Map_Grid", "nzmg"];
 	var nzmg = {
-	  init: init$c,
-	  forward: forward$c,
-	  inverse: inverse$c,
-	  names: names$c
+	  init: init$e,
+	  forward: forward$d,
+	  inverse: inverse$d,
+	  names: names$e
 	};
 
 	/*
@@ -13591,13 +13648,13 @@
 
 	/* Initialize the Miller Cylindrical projection
 	  -------------------------------------------*/
-	function init$b() {
+	function init$d() {
 	  //no-op
 	}
 
 	/* Miller Cylindrical forward equations--mapping lat,long to x,y
 	    ------------------------------------------------------------*/
-	function forward$b(p) {
+	function forward$c(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  /* Forward equations
@@ -13613,7 +13670,7 @@
 
 	/* Miller Cylindrical inverse equations--mapping x,y to lat/long
 	    ------------------------------------------------------------*/
-	function inverse$b(p) {
+	function inverse$c(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 
@@ -13625,18 +13682,18 @@
 	  return p;
 	}
 
-	var names$b = ["Miller_Cylindrical", "mill"];
+	var names$d = ["Miller_Cylindrical", "mill"];
 	var mill = {
-	  init: init$b,
-	  forward: forward$b,
-	  inverse: inverse$b,
-	  names: names$b
+	  init: init$d,
+	  forward: forward$c,
+	  inverse: inverse$c,
+	  names: names$d
 	};
 
 	var MAX_ITER = 20;
 
 
-	function init$a() {
+	function init$c() {
 	  /* Place parameters in static storage for common use
 	    -------------------------------------------------*/
 
@@ -13656,7 +13713,7 @@
 
 	/* Sinusoidal forward equations--mapping lat,long to x,y
 	  -----------------------------------------------------*/
-	function forward$a(p) {
+	function forward$b(p) {
 	  var x, y;
 	  var lon = p.x;
 	  var lat = p.y;
@@ -13695,7 +13752,7 @@
 	  return p;
 	}
 
-	function inverse$a(p) {
+	function inverse$b(p) {
 	  var lat, temp, lon, s;
 
 	  p.x -= this.x0;
@@ -13733,18 +13790,18 @@
 	  return p;
 	}
 
-	var names$a = ["Sinusoidal", "sinu"];
+	var names$c = ["Sinusoidal", "sinu"];
 	var sinu = {
-	  init: init$a,
-	  forward: forward$a,
-	  inverse: inverse$a,
-	  names: names$a
+	  init: init$c,
+	  forward: forward$b,
+	  inverse: inverse$b,
+	  names: names$c
 	};
 
-	function init$9() {}
+	function init$b() {}
 	/* Mollweide forward equations--mapping lat,long to x,y
 	    ----------------------------------------------------*/
-	function forward$9(p) {
+	function forward$a(p) {
 
 	  /* Forward equations
 	      -----------------*/
@@ -13780,7 +13837,7 @@
 	  return p;
 	}
 
-	function inverse$9(p) {
+	function inverse$a(p) {
 	  var theta;
 	  var arg;
 
@@ -13815,15 +13872,15 @@
 	  return p;
 	}
 
-	var names$9 = ["Mollweide", "moll"];
+	var names$b = ["Mollweide", "moll"];
 	var moll = {
-	  init: init$9,
-	  forward: forward$9,
-	  inverse: inverse$9,
-	  names: names$9
+	  init: init$b,
+	  forward: forward$a,
+	  inverse: inverse$a,
+	  names: names$b
 	};
 
-	function init$8() {
+	function init$a() {
 
 	  /* Place parameters in static storage for common use
 	      -------------------------------------------------*/
@@ -13863,7 +13920,7 @@
 
 	/* Equidistant Conic forward equations--mapping lat,long to x,y
 	  -----------------------------------------------------------*/
-	function forward$8(p) {
+	function forward$9(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  var rh1;
@@ -13887,7 +13944,7 @@
 
 	/* Inverse equations
 	  -----------------*/
-	function inverse$8(p) {
+	function inverse$9(p) {
 	  p.x -= this.x0;
 	  p.y = this.rh - p.y + this.y0;
 	  var con, rh1, lat, lon;
@@ -13922,22 +13979,22 @@
 
 	}
 
-	var names$8 = ["Equidistant_Conic", "eqdc"];
+	var names$a = ["Equidistant_Conic", "eqdc"];
 	var eqdc = {
-	  init: init$8,
-	  forward: forward$8,
-	  inverse: inverse$8,
-	  names: names$8
+	  init: init$a,
+	  forward: forward$9,
+	  inverse: inverse$9,
+	  names: names$a
 	};
 
 	/* Initialize the Van Der Grinten projection
 	  ----------------------------------------*/
-	function init$7() {
+	function init$9() {
 	  //this.R = 6370997; //Radius of earth
 	  this.R = this.a;
 	}
 
-	function forward$7(p) {
+	function forward$8(p) {
 
 	  var lon = p.x;
 	  var lat = p.y;
@@ -13994,7 +14051,7 @@
 
 	/* Van Der Grinten inverse equations--mapping x,y to lat/long
 	  ---------------------------------------------------------*/
-	function inverse$7(p) {
+	function inverse$8(p) {
 	  var lon, lat;
 	  var xx, yy, xys, c1, c2, c3;
 	  var a1;
@@ -14046,20 +14103,20 @@
 	  return p;
 	}
 
-	var names$7 = ["Van_der_Grinten_I", "VanDerGrinten", "vandg"];
+	var names$9 = ["Van_der_Grinten_I", "VanDerGrinten", "vandg"];
 	var vandg = {
-	  init: init$7,
-	  forward: forward$7,
-	  inverse: inverse$7,
-	  names: names$7
+	  init: init$9,
+	  forward: forward$8,
+	  inverse: inverse$8,
+	  names: names$9
 	};
 
-	function init$6() {
+	function init$8() {
 	  this.sin_p12 = Math.sin(this.lat0);
 	  this.cos_p12 = Math.cos(this.lat0);
 	}
 
-	function forward$6(p) {
+	function forward$7(p) {
 	  var lon = p.x;
 	  var lat = p.y;
 	  var sinphi = Math.sin(p.y);
@@ -14144,7 +14201,7 @@
 
 	}
 
-	function inverse$6(p) {
+	function inverse$7(p) {
 	  p.x -= this.x0;
 	  p.y -= this.y0;
 	  var rh, z, sinz, cosz, lon, lat, con, e0, e1, e2, e3, Mlp, M, N1, psi, Az, cosAz, tmp, A, B, D, Ee, F, sinpsi;
@@ -14241,15 +14298,15 @@
 
 	}
 
-	var names$6 = ["Azimuthal_Equidistant", "aeqd"];
+	var names$8 = ["Azimuthal_Equidistant", "aeqd"];
 	var aeqd = {
-	  init: init$6,
-	  forward: forward$6,
-	  inverse: inverse$6,
-	  names: names$6
+	  init: init$8,
+	  forward: forward$7,
+	  inverse: inverse$7,
+	  names: names$8
 	};
 
-	function init$5() {
+	function init$7() {
 	  //double temp;      /* temporary variable    */
 
 	  /* Place parameters in static storage for common use
@@ -14260,7 +14317,7 @@
 
 	/* Orthographic forward equations--mapping lat,long to x,y
 	    ---------------------------------------------------*/
-	function forward$5(p) {
+	function forward$6(p) {
 	  var sinphi, cosphi; /* sin and cos value        */
 	  var dlon; /* delta longitude value      */
 	  var coslon; /* cos of longitude        */
@@ -14287,7 +14344,7 @@
 	  return p;
 	}
 
-	function inverse$5(p) {
+	function inverse$6(p) {
 	  var rh; /* height above ellipsoid      */
 	  var z; /* angle          */
 	  var sinz, cosz; /* sin of z and cos of z      */
@@ -14329,12 +14386,12 @@
 	  return p;
 	}
 
-	var names$5 = ["ortho"];
+	var names$7 = ["ortho"];
 	var ortho = {
-	  init: init$5,
-	  forward: forward$5,
-	  inverse: inverse$5,
-	  names: names$5
+	  init: init$7,
+	  forward: forward$6,
+	  inverse: inverse$6,
+	  names: names$7
 	};
 
 	// QSC projection rewritten from the original PROJ4
@@ -14358,7 +14415,7 @@
 	    AREA_3: 4
 	};
 
-	function init$4() {
+	function init$6() {
 
 	  this.x0 = this.x0 || 0;
 	  this.y0 = this.y0 || 0;
@@ -14390,7 +14447,7 @@
 
 	// QSC forward equations--mapping lat,long to x,y
 	// -----------------------------------------------------------------
-	function forward$4(p) {
+	function forward$5(p) {
 	  var xy = {x: 0, y: 0};
 	  var lat, lon;
 	  var theta, phi;
@@ -14513,7 +14570,7 @@
 
 	// QSC inverse equations--mapping x,y to lat/long
 	// -----------------------------------------------------------------
-	function inverse$4(p) {
+	function inverse$5(p) {
 	  var lp = {lam: 0, phi: 0};
 	  var mu, nu, cosmu, tannu;
 	  var tantheta, theta, cosphi, phi;
@@ -14696,12 +14753,12 @@
 	  return slon;
 	}
 
-	var names$4 = ["Quadrilateralized Spherical Cube", "Quadrilateralized_Spherical_Cube", "qsc"];
+	var names$6 = ["Quadrilateralized Spherical Cube", "Quadrilateralized_Spherical_Cube", "qsc"];
 	var qsc = {
-	  init: init$4,
-	  forward: forward$4,
-	  inverse: inverse$4,
-	  names: names$4
+	  init: init$6,
+	  forward: forward$5,
+	  inverse: inverse$5,
+	  names: names$6
 	};
 
 	// Robinson projection
@@ -14779,7 +14836,7 @@
 	    return x;
 	}
 
-	function init$3() {
+	function init$5() {
 	    this.x0 = this.x0 || 0;
 	    this.y0 = this.y0 || 0;
 	    this.long0 = this.long0 || 0;
@@ -14787,7 +14844,7 @@
 	    this.title = this.title || "Robinson";
 	}
 
-	function forward$3(ll) {
+	function forward$4(ll) {
 	    var lon = adjust_lon(ll.x - this.long0);
 
 	    var dphi = Math.abs(ll.y);
@@ -14811,7 +14868,7 @@
 	    return xy;
 	}
 
-	function inverse$3(xy) {
+	function inverse$4(xy) {
 	    var ll = {
 	        x: (xy.x - this.x0) / (this.a * FXC),
 	        y: Math.abs(xy.y - this.y0) / (this.a * FYC)
@@ -14856,35 +14913,35 @@
 	    return ll;
 	}
 
-	var names$3 = ["Robinson", "robin"];
+	var names$5 = ["Robinson", "robin"];
 	var robin = {
-	  init: init$3,
-	  forward: forward$3,
-	  inverse: inverse$3,
-	  names: names$3
+	  init: init$5,
+	  forward: forward$4,
+	  inverse: inverse$4,
+	  names: names$5
 	};
 
-	function init$2() {
+	function init$4() {
 	    this.name = 'geocent';
 
 	}
 
-	function forward$2(p) {
+	function forward$3(p) {
 	    var point = geodeticToGeocentric(p, this.es, this.a);
 	    return point;
 	}
 
-	function inverse$2(p) {
+	function inverse$3(p) {
 	    var point = geocentricToGeodetic(p, this.es, this.a, this.b);
 	    return point;
 	}
 
-	var names$2 = ["Geocentric", 'geocentric', "geocent", "Geocent"];
+	var names$4 = ["Geocentric", 'geocentric', "geocent", "Geocent"];
 	var geocent = {
-	    init: init$2,
-	    forward: forward$2,
-	    inverse: inverse$2,
-	    names: names$2
+	    init: init$4,
+	    forward: forward$3,
+	    inverse: inverse$3,
+	    names: names$4
 	};
 
 	var mode = {
@@ -14902,7 +14959,7 @@
 	  lat0:  { def: 0, num: true }                 // default is Equator, conversion to rad is automatic
 	};
 
-	function init$1() {
+	function init$3() {
 	  Object.keys(params).forEach(function (p) {
 	    if (typeof this[p] === "undefined") {
 	      this[p] = params[p].def;
@@ -14946,7 +15003,7 @@
 	  this.sw = Math.sin(omega);
 	}
 
-	function forward$1(p) {
+	function forward$2(p) {
 	  p.x -= this.long0;
 	  var sinphi = Math.sin(p.y);
 	  var cosphi = Math.cos(p.y);
@@ -14996,7 +15053,7 @@
 	  return p;
 	}
 
-	function inverse$1(p) {
+	function inverse$2(p) {
 	  p.x /= this.a;
 	  p.y /= this.a;
 	  var r = { x: p.x, y: p.y };
@@ -15045,15 +15102,15 @@
 	  return p;
 	}
 
-	var names$1 = ["Tilted_Perspective", "tpers"];
+	var names$3 = ["Tilted_Perspective", "tpers"];
 	var tpers = {
-	  init: init$1,
-	  forward: forward$1,
-	  inverse: inverse$1,
-	  names: names$1
+	  init: init$3,
+	  forward: forward$2,
+	  inverse: inverse$2,
+	  names: names$3
 	};
 
-	function init() {
+	function init$2() {
 	    this.flip_axis = (this.sweep === 'x' ? 1 : 0);
 	    this.h = Number(this.h);
 	    this.radius_g_1 = this.h / this.a;
@@ -15087,7 +15144,7 @@
 	    }
 	}
 
-	function forward(p) {
+	function forward$1(p) {
 	    var lon = p.x;
 	    var lat = p.y;
 	    var tmp, v_x, v_y, v_z;
@@ -15135,7 +15192,7 @@
 	    return p;
 	}
 
-	function inverse(p) {
+	function inverse$1(p) {
 	    var v_x = -1.0;
 	    var v_y = 0.0;
 	    var v_z = 0.0;
@@ -15202,12 +15259,211 @@
 	    return p;
 	}
 
-	var names = ["Geostationary Satellite View", "Geostationary_Satellite", "geos"];
+	var names$2 = ["Geostationary Satellite View", "Geostationary_Satellite", "geos"];
 	var geos = {
-	    init: init,
-	    forward: forward,
-	    inverse: inverse,
-	    names: names,
+	    init: init$2,
+	    forward: forward$1,
+	    inverse: inverse$1,
+	    names: names$2,
+	};
+
+	/**
+	 * Copyright 2018 Bernie Jenny, Monash University, Melbourne, Australia.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * Equal Earth is a projection inspired by the Robinson projection, but unlike
+	 * the Robinson projection retains the relative size of areas. The projection
+	 * was designed in 2018 by Bojan Savric, Tom Patterson and Bernhard Jenny.
+	 *
+	 * Publication:
+	 * Bojan Savric, Tom Patterson & Bernhard Jenny (2018). The Equal Earth map
+	 * projection, International Journal of Geographical Information Science,
+	 * DOI: 10.1080/13658816.2018.1504949
+	 *
+	 * Code released August 2018
+	 * Ported to JavaScript and adapted for mapshaper-proj by Matthew Bloch August 2018
+	 * Modified for proj4js by Andreas Hocevar by Andreas Hocevar March 2024
+	 */
+
+
+	var A1 = 1.340264,
+	    A2 = -0.081106,
+	    A3 = 0.000893,
+	    A4 = 0.003796,
+	    M = Math.sqrt(3) / 2.0;
+
+	function init$1() {
+	  this.es = 0;
+	  this.long0 = this.long0 !== undefined ? this.long0 : 0;
+	}
+
+	function forward(p) {
+	  var lam = adjust_lon(p.x - this.long0);
+	  var phi = p.y;
+	  var paramLat = Math.asin(M * Math.sin(phi)),
+	  paramLatSq = paramLat * paramLat,
+	  paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+	  p.x = lam * Math.cos(paramLat) /
+	  (M * (A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq)));
+	  p.y = paramLat * (A1 + A2 * paramLatSq + paramLatPow6 * (A3 + A4 * paramLatSq));
+
+	  p.x = this.a * p.x + this.x0;
+	  p.y = this.a * p.y + this.y0;
+	  return p;
+	}
+
+	function inverse(p) {
+	  p.x = (p.x - this.x0) / this.a;
+	  p.y = (p.y - this.y0) / this.a;
+
+	  var EPS = 1e-9,
+	      NITER = 12,
+	      paramLat = p.y,
+	      paramLatSq, paramLatPow6, fy, fpy, dlat, i;
+
+	  for (i = 0; i < NITER; ++i) {
+	    paramLatSq = paramLat * paramLat;
+	    paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+	    fy = paramLat * (A1 + A2 * paramLatSq + paramLatPow6 * (A3 + A4 * paramLatSq)) - p.y;
+	    fpy = A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq);
+	    paramLat -= dlat = fy / fpy;
+	    if (Math.abs(dlat) < EPS) {
+	        break;
+	    }
+	  }
+	  paramLatSq = paramLat * paramLat;
+	  paramLatPow6 = paramLatSq * paramLatSq * paramLatSq;
+	  p.x = M * p.x * (A1 + 3 * A2 * paramLatSq + paramLatPow6 * (7 * A3 + 9 * A4 * paramLatSq)) /
+	          Math.cos(paramLat);
+	  p.y = Math.asin(Math.sin(paramLat) / M);
+
+	  p.x = adjust_lon(p.x + this.long0);
+	  return p;
+	}
+
+	var names$1 = ["eqearth", "Equal Earth", "Equal_Earth"];
+	var eqearth = {
+	  init: init$1,
+	  forward: forward,
+	  inverse: inverse,
+	  names: names$1
+	};
+
+	var EPS10 = 1e-10;
+
+	function init() {
+	  var c;
+
+	  this.phi1 = this.lat1;
+	  if (Math.abs(this.phi1) < EPS10) {
+	    throw new Error();
+	  }
+	  if (this.es) {
+	    this.en = pj_enfn(this.es);
+	    this.m1 = pj_mlfn(this.phi1, this.am1 = Math.sin(this.phi1),
+	      c = Math.cos(this.phi1), this.en);
+	    this.am1 = c / (Math.sqrt(1 - this.es * this.am1 * this.am1) * this.am1);
+	    this.inverse = e_inv;
+	    this.forward = e_fwd;
+	  } else {
+	    if (Math.abs(this.phi1) + EPS10 >= HALF_PI) {
+	      this.cphi1 = 0;
+	    }
+	    else {
+	      this.cphi1 = 1 / Math.tan(this.phi1);
+	    }
+	    this.inverse = s_inv;
+	    this.forward = s_fwd;
+	  }
+	}
+
+	function e_fwd(p) {
+	  var lam = adjust_lon(p.x - (this.long0 || 0));
+	  var phi = p.y;
+	  var rh, E, c;
+	  rh = this.am1 + this.m1 - pj_mlfn(phi, E = Math.sin(phi), c = Math.cos(phi), this.en);
+	  E = c * lam / (rh * Math.sqrt(1 - this.es * E * E));
+	  p.x = rh * Math.sin(E);
+	  p.y = this.am1 - rh * Math.cos(E);
+
+	  p.x = this.a * p.x + (this.x0 || 0);
+	  p.y = this.a * p.y + (this.y0 || 0);
+	  return p;
+	}
+
+	function e_inv(p) {
+	  p.x = (p.x - (this.x0 || 0)) / this.a;
+	  p.y = (p.y - (this.y0 || 0)) / this.a;
+
+	  var s, rh, lam, phi;
+	  rh = hypot(p.x, p.y = this.am1 - p.y);
+	  phi = pj_inv_mlfn(this.am1 + this.m1 - rh, this.es, this.en);
+	  if ((s = Math.abs(phi)) < HALF_PI) {
+	    s = Math.sin(phi);
+	    lam = rh * Math.atan2(p.x, p.y) * Math.sqrt(1 - this.es * s * s) / Math.cos(phi);
+	  } else if (Math.abs(s - HALF_PI) <= EPS10) {
+	    lam = 0;
+	  }
+	  else {
+	    throw new Error();
+	  }
+	  p.x = adjust_lon(lam + (this.long0 || 0));
+	  p.y = adjust_lat(phi);
+	  return p;
+	}
+
+	function s_fwd(p) {
+	  var lam = adjust_lon(p.x - (this.long0 || 0));
+	  var phi = p.y;
+	  var E, rh;
+	  rh = this.cphi1 + this.phi1 - phi;
+	  if (Math.abs(rh) > EPS10) {
+	    p.x = rh * Math.sin(E = lam * Math.cos(phi) / rh);
+	    p.y = this.cphi1 - rh * Math.cos(E);
+	  } else {
+	    p.x = p.y = 0;
+	  }
+
+	  p.x = this.a * p.x + (this.x0 || 0);
+	  p.y = this.a * p.y + (this.y0 || 0);
+	  return p;
+	}
+
+	function s_inv(p) {
+	  p.x = (p.x - (this.x0 || 0)) / this.a;
+	  p.y = (p.y - (this.y0 || 0)) / this.a;
+
+	  var lam, phi;
+	  var rh = hypot(p.x, p.y = this.cphi1 - p.y);
+	  phi = this.cphi1 + this.phi1 - rh;
+	  if (Math.abs(phi) > HALF_PI) {
+	    throw new Error();
+	  }
+	  if (Math.abs(Math.abs(phi) - HALF_PI) <= EPS10) {
+	    lam = 0;
+	  } else {
+	    lam = rh * Math.atan2(p.x, p.y) / Math.cos(phi);
+	  }
+	  p.x = adjust_lon(lam + (this.long0 || 0));
+	  p.y = adjust_lat(phi);
+	  return p;
+	}
+
+	var names = ["bonne", "Bonne (Werner lat_1=90)"];
+	var bonne = {
+	  init: init,
+	  names: names
 	};
 
 	function includedProjections(proj4){
@@ -15240,6 +15496,8 @@
 	  proj4.Proj.projections.add(geocent);
 	  proj4.Proj.projections.add(tpers);
 	  proj4.Proj.projections.add(geos);
+	  proj4.Proj.projections.add(eqearth);
+	  proj4.Proj.projections.add(bonne);
 	}
 
 	proj4.defaultDatum = 'WGS84'; //default datum
