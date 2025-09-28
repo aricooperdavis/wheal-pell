@@ -1,0 +1,49 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1574.80 -629.92 22283.46 1181.10
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "Seal Hole.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap seal-hole-ee -projection extended
+
+point 5684.364 -34.7034 station -name 4
+
+point 9112.041 163.40654 station -name 7
+
+point 15925.226 662.4474 station -name 14
+
+point 13604.943 637.15765 station -name 12
+
+point 10555.348 163.40654 station -name 8
+
+point 19208.209 670.2493 station -name 18
+
+point 13114.395 635.4453 station -name 11
+
+point 16372.437 656.98346 station -name 15
+
+point 0.0 0.0 station -name 1
+
+point 3539.8745 -105.84345 station -name 3
+
+point 11654.219 310.4177 station -name 9
+
+point 17496.846 656.98346 station -name 16
+
+point 18493.643 646.5446 station -name 17
+
+point 965.52765 275.03778 station -name 20
+
+point 12149.101 594.9875 station -name 10
+
+point 20677.48 677.94244 station -name 19
+
+point 1328.3446 2.3184009 station -name 2
+
+point 8957.009 158.26357 station -name 6
+
+point 15126.015 661.0525 station -name 13
+
+point 6937.5327 94.79901 station -name 5
+
+endscrap

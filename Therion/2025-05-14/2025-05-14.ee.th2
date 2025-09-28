@@ -1,0 +1,111 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1574.80 -236.22 32204.72 551.18
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "SH2.ee.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap sh2-ee -projection extended
+
+point 20664.643 160.23572 station -name 35
+
+point 25110.988 179.13425 station -name 40
+
+point 6426.5874 57.33974 station -name 11
+
+point 6294.8115 49.65718 station -name 10
+
+point 9503.331 91.95214 station -name 18
+
+point 13824.02 138.15453 station -name 25
+
+point 15688.23 144.20726 station -name 29
+
+point 14185.26 143.35538 station -name 26
+
+point 9302.949 109.78412 station -name 17
+
+point 10479.758 103.92701 station -name 19
+
+point 15361.8955 152.81073 station -name 28
+
+point 29365.742 307.33478 station -name 50
+
+point 1009.36127 -1.3852111 station -name 2
+
+point 26816.96 176.13655 station -name 43
+
+point 27099.42 189.4809 station -name 44
+
+point 27927.666 173.81992 station -name 47
+
+point 17613.455 142.65268 station -name 32
+
+point 21364.547 149.22493 station -name 36
+
+point 6957.1753 71.60528 station -name 12
+
+point 27599.248 186.19237 station -name 46
+
+point 27311.617 186.23679 station -name 45
+
+point 12543.591 124.80174 station -name 23
+
+point 5192.608 55.08122 station -name 8
+
+point 26653.158 169.08432 station -name 42
+
+point 3744.2957 20.720284 station -name 6
+
+point 7506.058 83.66014 station -name 14
+
+point 2057.4204 24.356691 station -name 4
+
+point 15825.561 153.27843 station -name 30
+
+point 29949.63 300.54907 station -name 51
+
+point 23060.775 188.67525 station -name 38
+
+point 5135.758 29.39308 station -name 9
+
+point 11243.355 124.32319 station -name 21
+
+point 16902.188 149.98174 station -name 31
+
+point 3534.3933 22.878645 station -name 5
+
+point 14669.106 148.75362 station -name 27
+
+point 8905.273 72.54823 station -name 16
+
+point 19555.967 156.91653 station -name 34
+
+point 28856.725 338.0213 station -name 49
+
+point 4685.3213 41.365032 station -name 7
+
+point 13325.628 126.749504 station -name 24
+
+point 8289.276 85.47823 station -name 15
+
+point 18324.465 139.88934 station -name 33
+
+point 12280.037 113.47074 station -name 22
+
+point 10748.22 123.18729 station -name 20
+
+point 24147.846 163.22348 station -name 39
+
+point 28399.334 185.19019 station -name 48
+
+point 7389.4395 77.33533 station -name 13
+
+point 26084.121 175.43492 station -name 41
+
+point 22217.53 148.1824 station -name 37
+
+point 1740.6594 18.4427 station -name 3
+
+point 0.0 0.0 station -name 1
+
+endscrap

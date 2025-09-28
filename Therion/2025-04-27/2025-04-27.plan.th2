@@ -1,0 +1,53 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -2440.94 -17716.54 13070.87 1574.80
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "Seal Hole.plan.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap seal-hole-plan -projection plan
+
+point 2150.253 -4894.547 station -name 4
+
+point 4178.7676 -7391.618 station -name 7
+
+point 8164.8706 -12830.746 station -name 14
+
+point 6585.8286 -11130.6875 station -name 12
+
+point 4751.9736 -8716.22 station -name 8
+
+point 10633.24 -14895.714 station -name 18
+
+point 6335.383 -10708.889 station -name 11
+
+point 8415.594 -13201.063 station -name 15
+
+point 0.0 0.0 station -name 1
+
+point 935.60046 -3127.217 station -name 3
+
+point 5355.2793 -9634.664 station -name 9
+
+point 9337.78 -13844.39 station -name 16
+
+point 10216.261 -14315.426 station -name 17
+
+point -788.0034 -557.93756 station -name 20
+
+point 5639.839 -10039.552 station -name 10
+
+point 11444.826 -16120.494 station -name 19
+
+point -301.0712 -1293.7756 station -name 2
+
+point 4322.41 -7333.291 station -name 6
+
+point 7625.137 -12241.316 station -name 13
+
+point 2904.4287 -5895.372 station -name 5
+
+point 3754.9763 -8155.9272 label -text " back of cave 2x seals " -scale xl
+
+point 5841.9385 -10104.513 label -text " adit " -scale m
+
+endscrap

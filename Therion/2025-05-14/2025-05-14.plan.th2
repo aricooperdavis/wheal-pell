@@ -1,0 +1,133 @@
+encoding utf-8
+
+##XTHERION## xth_me_area_adjust -1574.80 -27480.31 13385.83 1574.80
+##XTHERION## xth_me_image_insert {0.0 1 1.0} {0.0 1} "SH2.plan.xvi" 0 {}
+##XTHERION## xth_me_area_zoom_to 25
+
+scrap sh2-plan -projection plan
+
+point 8301.864 -17540.584 station -name 35
+
+point 10129.534 -21551.98 station -name 40
+
+point 4347.3354 -4595.623 station -name 11
+
+point 4157.743 -4587.438 station -name 10
+
+point 6035.822 -7064.7104 station -name 18
+
+point 7486.214 -11093.999 station -name 25
+
+point 7837.205 -12775.363 station -name 29
+
+point 7720.078 -11369.321 station -name 26
+
+point 5928.58 -6895.442 station -name 17
+
+point 6486.136 -7931.0986 station -name 19
+
+point 7964.3813 -12474.829 station -name 28
+
+point 10531.385 -24723.836 station -name 50
+
+point 831.61115 -572.0429 station -name 2
+
+point 10750.664 -23123.793 station -name 43
+
+point 10954.157 -23319.686 station -name 44
+
+point 11355.746 -24019.72 station -name 47
+
+point 7609.1304 -14583.109 station -name 32
+
+point 8425.267 -18229.527 station -name 36
+
+point 4518.2114 -5097.9424 station -name 12
+
+point 11221.503 -23719.99 station -name 46
+
+point 11010.816 -23524.18 station -name 45
+
+point 7035.7173 -9895.902 station -name 23
+
+point 3659.1616 -3571.3562 station -name 8
+
+point 10733.268 -22960.916 station -name 42
+
+point 2547.294 -2648.4521 station -name 6
+
+point 4819.196 -5507.495 station -name 14
+
+point 1491.9906 -1339.5719 station -name 4
+
+point 7909.8276 -12891.92 station -name 30
+
+point 10137.012 -25154.414 station -name 51
+
+point 9251.774 -19710.633 station -name 38
+
+point 3409.4395 -3702.3125 station -name 9
+
+point 6744.17 -8637.911 station -name 21
+
+point 7487.6055 -13882.301 station -name 31
+
+point 2383.601 -2517.0608 station -name 5
+
+point 7972.529 -11782.089 station -name 27
+
+point 5776.433 -6528.023 station -name 16
+
+point 7999.8145 -16473.85 station -name 34
+
+point 11038.714 -24682.44 station -name 49
+
+point 3240.6267 -3284.7056 station -name 7
+
+point 7295.658 -10633.474 station -name 24
+
+point 5353.1514 -6080.4893 station -name 15
+
+point 7650.5503 -15292.912 station -name 33
+
+point 7037.08 -9632.351 station -name 22
+
+point 6633.96 -8155.1973 station -name 20
+
+point 9624.75 -20731.715 station -name 39
+
+point 11449.805 -24481.912 station -name 48
+
+point 4835.077 -5391.963 station -name 13
+
+point 10436.359 -22475.479 station -name 41
+
+point 8832.085 -18979.246 station -name 37
+
+point 1208.1543 -1198.95 station -name 3
+
+point 0.0 0.0 station -name 1
+
+point 6436.324 -6826.26 label -text " gcl adit and stope climb " -scale s
+
+point 5413.239 -6942.3906 label -text " pot bypass? " -scale s
+
+point 6840.2354 -8159.0234 label -text " end x1 " -scale s
+
+point 7668.6733 -11097.596 label -text " passage off left in " -scale s
+
+point 8106.749 -12467.122 label -text " y " -scale s
+
+point 8305.185 -12944.232 label -text " backfilled continuation  " -scale s
+
+point 7974.4595 -17726.191 label -text " ochre dam 1m " -scale s
+
+point 9588.086 -19438.51 label -text " backfilled sgaft " -scale l
+
+point 11745.947 -24474.084 label -text " flucan run in timber " -scale l
+
+point 11093.887 -24031.74 label -text " funk yes " -scale l
+
+point 10008.295 -25905.092 label -text " backfilled " -scale l
+
+endscrap
