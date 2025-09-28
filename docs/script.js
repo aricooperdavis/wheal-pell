@@ -29,6 +29,7 @@ window.addEventListener('load', function() {
         },
     });
     viewer.addOverlay( 'OpenStreetMap', new OSMProvider() );
+    viewer.addOverlay( 'OS Outdoor', new OSDataHubProvider( 'Outdoor_3857', '2GHbE0Pal0c0f9ZxE69vPvIIVRgGADts') );
     viewer.addOverlay( 'Satellite', new MapBoxProvider( 'mapbox.satellite', 'pk.eyJ1IjoiYXJpY29vcGVyZGF2aXMiLCJhIjoiY2xydGQ2c2RzMDVreTJpbXhxcnF5ZWEzZSJ9.dB0-lgAaKzyrQ-MvVrrvPg') );
     viewer.addOverlay( 'OS 25 inch 1873-1888', new NLSProvider( '25_inch/cornwall_1st' ) );
     viewer.addOverlay( 'OS 25 inch 1892-1948', new NLSProvider( '25_inch/cornwall' ) );
