@@ -1,0 +1,19 @@
+[
+	{
+		"title": "EA DTM for Pell/Seal Hole",
+		"overlayMaxZoom": 18,
+		"maxZoom": 18,
+		"minZoom": 13,
+		"divisions": 128,
+		"subdirectory": "pell-sh_dtm_tile_set",
+		"dtmScale": 278,
+		"minX": 3976,
+		"maxX": 3977,
+		"minY": 2766,
+		"maxY": 2767,
+		"attributions": [],
+		"log": true,
+		"usedZoom": 18,
+		"encoding": "dzz"
+	}
+]
