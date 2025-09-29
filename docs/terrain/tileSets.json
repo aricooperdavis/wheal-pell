@@ -5,7 +5,7 @@
 		"maxZoom": 18,
 		"minZoom": 13,
 		"divisions": 128,
-		"subdirectory": "pell-sh_dtm_tile_set",
+		"subdirectory": "../../../../terrain/pell-sh_dtm_tile_set",
 		"dtmScale": 278,
 		"minX": 3976,
 		"maxX": 3977,
