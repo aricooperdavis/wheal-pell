@@ -3,7 +3,7 @@ window.addEventListener('load', function() {
         avenControls: false,
         home: 'CaveView/',
         surveyDirectory: 'surveys/',
-        terrainDirectory: '../../../terrain/',
+        terrainDirectory: 'terrain/',
         theme: {
             background: 'white',
             box: {
